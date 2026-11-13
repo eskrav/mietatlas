@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nettokaltmieten nach Kreisen – Zensus 2022</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef1f3;          /* map background: neutral, so the data carries the colour */
+    --panel: #ffffff;
+    --ink: #1d2733;
+    --muted: #5b6672;
+    --rule: #d5dbe0;
+    --kreis-line: #ffffff;
+    --land-line: #1d2733;
+    --focus: #1f5fbf;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151b22; --panel: #1c242d; --ink: #e8edf2; --muted: #9aa6b2;
+      --rule: #2e3944; --kreis-line: #151b22; --land-line: #e8edf2; --focus: #7fb0ff;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151b22; --panel: #1c242d; --ink: #e8edf2; --muted: #9aa6b2;
+    --rule: #2e3944; --kreis-line: #151b22; --land-line: #e8edf2; --focus: #7fb0ff;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 400 16px/1.5 "Fira Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; height: 100%; }
+  #map { min-height: 0; }
+  aside {
+    background: var(--panel); border-left: 1px solid var(--rule);
+    padding: 28px 28px calc(24px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto; display: flex; flex-direction: column; gap: 22px;
+  }
+  h1 { font-size: 1.55rem; line-height: 1.2; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  p { margin: 0; }
+  .lede { color: var(--muted); max-width: 34em; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  /* legend: the six quantile classes, each with its value range */
+  .legend { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }
+  .legend span { height: 14px; display: block; }
+  /* class boundaries sit under the gaps between swatches */
+  .legend-labels { position: relative; height: 1.2em; font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+  .legend-labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .legend-note { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+
+  label { font-weight: 500; display: block; margin-bottom: 6px; }
+  input[type="search"] {
+    width: 100%; font: inherit; padding: 9px 11px; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--rule); border-radius: 6px;
+  }
+  input[type="search"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  /* detail for the hovered or selected Kreis */
+  .detail { border-top: 1px solid var(--rule); padding-top: 18px; min-height: 150px; }
+  .detail .hint { color: var(--muted); }
+  .detail h2 { font-size: 1.15rem; margin: 0 0 2px; font-weight: 500; }
+  .detail .typ { color: var(--muted); font-size: 0.9rem; }
+  .detail .value { font-size: 2.6rem; font-weight: 700; line-height: 1.1; margin: 12px 0 2px; }
+  .detail .value small { font-size: 1rem; font-weight: 400; color: var(--muted); }
+  .detail .compare { color: var(--muted); font-size: 0.92rem; }
+
+  footer { margin-top: auto; font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 14px; }
+  footer p + p { margin-top: 6px; }
+  a { color: inherit; }
+  .maplibregl-ctrl-attrib { font-family: inherit; }
+
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; grid-template-rows: 58vh auto; height: auto; }
+    #map { height: 58vh; }
+    aside { border-left: 0; border-top: 1px solid var(--rule); padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px)); }
+    h1 { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div id="map" role="region" aria-label="Karte der Nettokaltmieten nach Kreisen"></div>
+  <aside>
+    <div>
+      <h1>Was kostet Wohnen zur Miete in Ihrem Kreis?</h1>
+    </div>
+    <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte. Es sind Bestandsmieten aus dem Zensus 2022, keine aktuellen Angebotsmieten.</p>
+
+    <div>
+      <div class="legend" id="legend" aria-hidden="true"></div>
+      <div class="legend-labels" id="legend-labels"></div>
+      <p class="legend-note">Nettokaltmiete in €/m². Gleich breite Farbstufen zwischen dem 2. und 98. Perzentil; die äußeren Stufen umfassen alle niedrigeren bzw. höheren Werte.</p>
+    </div>
+
+    <div>
+      <label for="search">Kreis oder Stadt suchen</label>
+      <input type="search" id="search" list="kreisliste" placeholder="z. B. Leipzig, Stadt" autocomplete="off">
+      <datalist id="kreisliste"></datalist>
+    </div>
+
+    <section class="detail" id="detail" aria-live="polite">
+      <p class="hint">Fahren Sie mit der Maus über einen Kreis oder tippen Sie darauf.</p>
+    </section>
+
+    <footer>
+      <p>Mietdaten: Zensus 2022, Tabelle 4000W-0004, © Statistische Ämter des Bundes und der Länder, Lizenz <a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>.</p>
+      <p>Geometrie: © <a href="https://gdz.bkg.bund.de">BKG</a> (2022), <a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>, Datenquellen: <a href="https://sgx.geodatenzentrum.de/web_public/gdz/datenquellen/datenquellen_vg_nuts.pdf">Verwaltungsgebiete</a>.</p>
+      <p>Prototyp von Dr. Ekaterina Kravtchenko. Code und Datenpipeline: <a href="https://github.com/eskrav/mietatlas">GitHub</a>.</p>
+    </footer>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+// Sequential palette, light (cheaper) to dark (more expensive).
+const COLORS = ["#fbeccb", "#f5c98c", "#e99a62", "#cf6a4f", "#9f4250", "#5e2a49"];
+const fmt = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// whole numbers without decimals (class boundaries), everything else with two
+const fmtEdge = v => Number.isInteger(v) ? String(v) : fmt.format(v);
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+async function getJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url} konnte nicht geladen werden (${res.status})`);
+  return res.json();
+}
+
+Promise.all([
+  getJSON("data/summary.json"),
+  getJSON("data/kreise_mieten.geojson"),
+  getJSON("data/laender.geojson"),
+]).then(([summary, kreise, laender]) => init(summary, kreise, laender))
+  .catch(err => {
+    document.getElementById("detail").innerHTML =
+      `<p class="hint">Die Kartendaten konnten nicht geladen werden: ${err.message}. Bitte die Seite neu laden.</p>`;
+  });
+
+function init(summary, kreise, laender) {
+  const breaks = summary.klassengrenzen;
+  buildLegend(breaks, summary);
+
+  // give every feature a numeric id so hover/selection can use feature-state
+  kreise.features.forEach((f, i) => { f.id = i; });
+
+  const map = new maplibregl.Map({
+    container: "map",
+    style: {
+      version: 8,
+      sources: {},
+      layers: [{ id: "bg", type: "background", paint: { "background-color": css("--bg") } }],
+    },
+    bounds: [[5.8, 47.2], [15.1, 55.1]],
+    fitBoundsOptions: { padding: 24 },
+    attributionControl: false,
+    dragRotate: false,
+    pitchWithRotate: false,
+  });
+  map.touchZoomRotate.disableRotation();
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-left");
+
+  map.on("load", () => {
+    map.addSource("kreise", { type: "geojson", data: kreise });
+    map.addSource("laender", { type: "geojson", data: laender });
+
+    // colour step expression: COLORS[0] below the first break, and so on
+    const step = ["step", ["get", "miete"], COLORS[0]];
+    breaks.forEach((b, i) => step.push(b, COLORS[i + 1]));
+
+    map.addLayer({ id: "kreise-fill", type: "fill", source: "kreise", paint: { "fill-color": step } });
+    map.addLayer({ id: "kreise-line", type: "line", source: "kreise",
+      paint: { "line-color": css("--kreis-line"), "line-width": 0.4 } });
+    map.addLayer({ id: "laender-line", type: "line", source: "laender",
+      paint: { "line-color": css("--land-line"), "line-width": 0.9, "line-opacity": 0.55 } });
+    map.addLayer({ id: "kreise-active", type: "line", source: "kreise",
+      paint: { "line-color": css("--land-line"), "line-width": 2.2,
+               "line-opacity": ["case", ["boolean", ["feature-state", "active"], false], 1, 0] } });
+  });
+
+  let hovered = null, selected = null;
+  const setActive = (id, on) => id !== null && map.setFeatureState({ source: "kreise", id }, { active: on });
+
+  map.on("mousemove", "kreise-fill", e => {
+    map.getCanvas().style.cursor = "pointer";
+    const f = e.features[0];
+    if (hovered !== f.id) { if (hovered !== selected) setActive(hovered, false); hovered = f.id; setActive(f.id, true); }
+    showDetail(f.properties, summary);
+  });
+  map.on("mouseleave", "kreise-fill", () => {
+    map.getCanvas().style.cursor = "";
+    if (hovered !== selected) setActive(hovered, false);
+    hovered = null;
+    if (selected !== null) showDetail(kreise.features[selected].properties, summary);
+  });
+  map.on("click", "kreise-fill", e => select(e.features[0].id, false));
+
+  function select(id, fly) {
+    setActive(selected, false);
+    selected = id;
+    setActive(id, true);
+    const f = kreise.features[id];
+    showDetail(f.properties, summary);
+    if (fly) map.fitBounds(bbox(f.geometry), { padding: 60, maxZoom: 9, duration: 600 });
+  }
+
+  // search via the datalist of official names
+  const list = document.getElementById("kreisliste");
+  const byName = new Map();
+  kreise.features.slice().sort((a, b) => a.properties.name.localeCompare(b.properties.name, "de"))
+    .forEach(f => { byName.set(f.properties.name.toLowerCase(), f.id);
+      const o = document.createElement("option"); o.value = f.properties.name; list.appendChild(o); });
+  const search = document.getElementById("search");
+  search.addEventListener("change", () => {
+    const id = byName.get(search.value.trim().toLowerCase());
+    if (id !== undefined) select(id, true);
+  });
+}
+
+function showDetail(p, summary) {
+  const diff = p.miete - summary.deutschland;
+  const rel = Math.abs(diff) < 0.005 ? "genau im Bundesdurchschnitt"
+    : `${fmt.format(Math.abs(diff))} € ${diff > 0 ? "über" : "unter"} dem Bundeswert von ${fmt.format(summary.deutschland)} €`;
+  document.getElementById("detail").innerHTML = `
+    <h2>${p.name}</h2>
+    <div class="typ">${p.BEZ}</div>
+    <div class="value">${fmt.format(p.miete)} <small>€/m²</small></div>
+    <p class="compare">${rel}<br>Rang ${p.rang} von ${summary.anzahl_kreise} (1 = teuerster Kreis)</p>`;
+}
+
+function buildLegend(breaks, summary) {
+
+  document.getElementById("legend").innerHTML = COLORS.map(c => `<span style="background:${c}"></span>`).join("");
+  // one label per class boundary, centred under the gap between two swatches;
+  // the outer classes are open-ended, so they get no outer label
+  document.getElementById("legend-labels").innerHTML = breaks.map((v, i) =>
+    `<span style="left:${((i + 1) / COLORS.length) * 100}%">${fmtEdge(v)}</span>`).join("");
+}
+
+function bbox(geom) {
+  let minX = 180, minY = 90, maxX = -180, maxY = -90;
+  const walk = c => typeof c[0] === "number"
+    ? (minX = Math.min(minX, c[0]), minY = Math.min(minY, c[1]), maxX = Math.max(maxX, c[0]), maxY = Math.max(maxY, c[1]))
+    : c.forEach(walk);
+  walk(geom.coordinates);
+  return [[minX, minY], [maxX, maxY]];
+}
+</script>
+</body>
+</html>
