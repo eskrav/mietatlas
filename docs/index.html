@@ -73,11 +73,24 @@
   .legend-unit { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
 
   label { font-weight: 500; display: block; margin-bottom: 6px; }
-  input[type="search"] {
+  #search {
     width: 100%; font: inherit; padding: 9px 11px; color: var(--ink); background: var(--bg);
     border: 1px solid var(--rule); border-radius: 6px;
   }
-  input[type="search"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  #search:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  .combo { position: relative; }
+  #search { scroll-margin-top: 12px; }
+  #suggestions {
+    position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 4px);
+    margin: 0; padding: 4px 0; list-style: none; background: var(--panel);
+    border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    max-height: 320px; overflow-y: auto;
+  }
+  #suggestions li { padding: 9px 12px; cursor: pointer; }
+  #suggestions li small { color: var(--muted); margin-left: 6px; }
+  #suggestions li[aria-selected="true"], #suggestions li:hover { background: var(--bg); }
+  #suggestions .none { color: var(--muted); cursor: default; }
 
   /* detail for the hovered or selected Kreis */
   .detail { border-top: 1px solid var(--rule); padding-top: 16px; min-height: 140px; }
@@ -98,12 +111,13 @@
   @media (max-width: 760px) {
     .layout { height: auto; grid-template-columns: 1fr; grid-template-rows: auto auto auto auto;
       grid-template-areas: "intro" "map" "controls" "footer"; }
-    #map { position: static; height: 55vh; }
+    #map { position: relative; height: 55vh; }   /* relative, not static: the map canvas is positioned inside it */
     .panel { border-left: 0; padding: 0 18px; }
     .intro { padding-top: 18px; padding-bottom: 14px; gap: 12px; }
     .controls { padding-top: 16px; }
     .detail { min-height: 0; }
     h1 { font-size: 1.3rem; }
+    body.searching footer.panel { padding-bottom: 70vh; }
   }
 </style>
 </head>
@@ -115,7 +129,7 @@
     <div>
       <div class="legend" id="legend" aria-hidden="true"></div>
       <div class="legend-labels" id="legend-labels"></div>
-      <p class="legend-unit">€ je m²</p>
+      <p class="legend-unit">Nettokaltmiete in €/m²</p>
     </div>
   </header>
 
@@ -124,8 +138,12 @@
   <section class="panel controls">
     <div>
       <label for="search">Kreis oder Stadt suchen</label>
-      <input type="search" id="search" list="kreisliste" placeholder="z. B. Leipzig, Stadt" autocomplete="off">
-      <datalist id="kreisliste"></datalist>
+      <div class="combo">
+        <input type="text" id="search" placeholder="z. B. Leipzig" autocomplete="off" autocorrect="off"
+               spellcheck="false" enterkeyhint="search" role="combobox" aria-autocomplete="list"
+               aria-expanded="false" aria-controls="suggestions">
+        <ul id="suggestions" role="listbox" hidden></ul>
+      </div>
     </div>
     <div class="detail" id="detail" aria-live="polite">
       <p class="hint">Fahren Sie mit der Maus über einen Kreis oder tippen Sie darauf.</p>
@@ -143,6 +161,7 @@
 <script src="vendor/maplibre/maplibre-gl.js"></script>
 <script>
 // Sequential palette, light (cheaper) to dark (more expensive).
+const GERMANY = [[5.8, 47.2], [15.1, 55.1]];   // bounding box, [west, south], [east, north]
 const COLORS = ["#fbeccb", "#f5c98c", "#e99a62", "#cf6a4f", "#9f4250", "#5e2a49"];
 const fmt = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 // whole numbers without decimals (class boundaries), everything else with two
@@ -179,16 +198,36 @@ function init(summary, kreise, laender) {
       sources: {},
       layers: [{ id: "bg", type: "background", paint: { "background-color": css("--bg") } }],
     },
-    bounds: [[5.8, 47.2], [15.1, 55.1]],
-    minZoom: 4.5,                               // no zooming out past Germany
-    maxZoom: 10,                                // Kreis level; closer adds nothing without a basemap
-    maxBounds: [[1.5, 44.5], [19.5, 57.5]],     // keep Germany in view while panning
+    bounds: GERMANY,
     fitBoundsOptions: { padding: 24 },
+    maxZoom: 10,                       // Kreis level; closer adds nothing without a basemap
+    // on touch screens one finger scrolls the page, two fingers move the map
+    cooperativeGestures: matchMedia("(pointer: coarse)").matches,
+    locale: {
+      "CooperativeGesturesHandler.MobileHelpText": "Karte mit zwei Fingern verschieben",
+      "CooperativeGesturesHandler.WindowsHelpText": "Strg + Scrollen zum Zoomen",
+      "CooperativeGesturesHandler.MacHelpText": "⌘ + Scrollen zum Zoomen",
+    },
     attributionControl: false,
     dragRotate: false,
     pitchWithRotate: false,
   });
   map.touchZoomRotate.disableRotation();
+
+  // lowest zoom: all of Germany fits, with a little room around it (recomputed on resize)
+  const updateMinZoom = () => {
+    const cam = map.cameraForBounds(GERMANY, { padding: 24 });
+    if (cam) map.setMinZoom(Math.max(0, cam.zoom - 0.4));
+  };
+  updateMinZoom();
+  map.on("resize", updateMinZoom);
+  // keep the map centre over Germany, so it can't be dragged out of view
+  map.on("moveend", () => {
+    const c = map.getCenter();
+    const lng = Math.min(Math.max(c.lng, GERMANY[0][0]), GERMANY[1][0]);
+    const lat = Math.min(Math.max(c.lat, GERMANY[0][1]), GERMANY[1][1]);
+    if (lng !== c.lng || lat !== c.lat) map.easeTo({ center: [lng, lat], duration: 300 });
+  });
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-left");
 
   map.on("load", () => {
@@ -235,23 +274,68 @@ function init(summary, kreise, laender) {
     if (fly) map.fitBounds(bbox(f.geometry), { padding: 60, maxZoom: 9, duration: 600 });
   }
 
-  // search via the datalist of official names
-  const list = document.getElementById("kreisliste");
-  const byName = new Map();
-  kreise.features.slice().sort((a, b) => a.properties.name.localeCompare(b.properties.name, "de"))
-    .forEach(f => { byName.set(f.properties.name.toLowerCase(), f.id);
-      const o = document.createElement("option"); o.value = f.properties.name; list.appendChild(o); });
-  const search = document.getElementById("search");
-  search.addEventListener("change", () => {
-    const id = byName.get(search.value.trim().toLowerCase());
-    if (id !== undefined) select(id, true);
+  // search: own suggestion list, matching anywhere in the name and ignoring
+  // case and umlauts ("munchen" finds "München")
+  const norm = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ß/g, "ss");
+  const entries = kreise.features.map(f => ({ id: f.id, name: f.properties.name, typ: f.properties.BEZ, key: norm(f.properties.name) }))
+    .sort((a, b) => a.name.localeCompare(b.name, "de"));
+  const input = document.getElementById("search");
+  const list = document.getElementById("suggestions");
+  let matches = [], active = -1;
+
+  function render() {
+    list.innerHTML = matches.length
+      ? matches.map((m, i) => `<li id="opt-${i}" role="option" aria-selected="${i === active}" data-i="${i}">${m.name}<small>${m.typ}</small></li>`).join("")
+      : `<li class="none">Kein Kreis gefunden</li>`;
+    list.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+    input.setAttribute("aria-activedescendant", active >= 0 ? `opt-${active}` : "");
+  }
+  function close() { list.hidden = true; input.setAttribute("aria-expanded", "false"); active = -1; }
+  function choose(m) {
+    input.value = m.name;
+    close();
+    input.blur();                       // closes the on-screen keyboard
+    select(m.id, true);
+    // on phones, bring the map back into view; the result sits directly below it
+    if (matchMedia("(max-width: 760px)").matches)
+      setTimeout(() => document.getElementById("map").scrollIntoView({ block: "start", behavior: "smooth" }), 150);
+  }
+
+  input.addEventListener("input", () => {
+    const q = norm(input.value.trim());
+    if (!q) { close(); return; }
+    matches = entries.filter(e => e.key.includes(q))
+      .sort((a, b) => (b.key.startsWith(q) - a.key.startsWith(q)))   // prefix matches first
+      .slice(0, 8);
+    active = matches.length ? 0 : -1;
+    render();
+  });
+  input.addEventListener("keydown", e => {
+    if (list.hidden) return;
+    if (e.key === "ArrowDown") { active = Math.min(active + 1, matches.length - 1); render(); e.preventDefault(); }
+    else if (e.key === "ArrowUp") { active = Math.max(active - 1, 0); render(); e.preventDefault(); }
+    else if (e.key === "Enter") { if (matches[active]) choose(matches[active]); e.preventDefault(); }
+    else if (e.key === "Escape") close();
+  });
+  // pointerdown fires before the input loses focus, so taps on a suggestion register
+  list.addEventListener("pointerdown", e => {
+    const li = e.target.closest("li[data-i]");
+    if (li) { e.preventDefault(); choose(matches[+li.dataset.i]); }
+  });
+  input.addEventListener("blur", () => setTimeout(() => { close(); document.body.classList.remove("searching"); }, 100));
+  // on phones, move the search field to the top so the keyboard doesn't hide the suggestions
+  input.addEventListener("focus", () => {
+    if (!matchMedia("(max-width: 760px)").matches) return;
+    document.body.classList.add("searching");     // extra room below, so the field can scroll up
+    setTimeout(() => input.scrollIntoView({ block: "start", behavior: "smooth" }), 300);
   });
 }
 
 function showDetail(p, summary) {
   const diff = p.miete - summary.deutschland;
   const rel = Math.abs(diff) < 0.005 ? "genau im Bundesdurchschnitt"
-    : `${fmt.format(Math.abs(diff))} € ${diff > 0 ? "über" : "unter"} dem Bundesdurchschnitt von ${fmt.format(summary.deutschland)} €`;
+    : `${fmt.format(Math.abs(diff))}&nbsp;€ ${diff > 0 ? "über" : "unter"} dem Bundesdurchschnitt von ${fmt.format(summary.deutschland)}&nbsp;€`;
   document.getElementById("detail").innerHTML = `
     <h2>${p.name}</h2>
     <div class="typ">${p.BEZ}</div>
