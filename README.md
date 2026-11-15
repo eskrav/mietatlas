@@ -31,7 +31,7 @@ Bei jedem Push führt ein GitHub-Actions-Workflow die Pipeline samt Prüfungen a
 ## Entscheidungen
 
 - **Farbklassen: gleiche Intervalle über einen gekappten Wertebereich.** Der Bereich vom 2. bis zum 98. Perzentil wird in vier gleich breite Stufen geteilt; dazu kommen zwei offene Randstufen für die niedrigsten und höchsten Werte. Reine gleiche Intervalle über den gesamten Bereich hätten sich nach dem Extremwert München (12,89 €) gerichtet, sodass die beiden obersten Stufen nur 9 Kreise enthalten hätten. Quantile hätten Unterschiede von wenigen Cent in der breiten Mitte betont und alle teuren Regionen zusammengefasst; eine logarithmische Skala lohnt sich erst bei Werten über mehrere Größenordnungen. Das Verfahren ist datengetrieben und lässt sich ohne Anpassung auf andere Indikatoren übertragen (Parameter in `pipeline.py`: Anzahl der Stufen, Perzentile).
-- **Kein Länderdurchschnitt aus Kreiswerten:** Ein einfacher Mittelwert der Kreiswerte wäre falsch, weil die Kreise sehr unterschiedlich viele Mietwohnungen haben. Der Bundeswert (7,28 €/m²) stammt deshalb direkt aus derselben Zensus-Tabelle auf Deutschland-Ebene. Deshalb liegen rund drei Viertel der Kreise (297 von 400) unter dem Bundeswert: Er wird von den Städten mit vielen und teureren Mietwohnungen geprägt.
+- **Kein Länderdurchschnitt aus Kreiswerten:** Ein einfacher Mittelwert der Kreiswerte wäre falsch, weil die Kreise sehr unterschiedlich viele Mietwohnungen haben. Der Bundesdurchschnitt (7,28 €/m²) stammt deshalb direkt aus derselben Zensus-Tabelle auf Deutschland-Ebene; er ist der Durchschnitt über alle vermieteten Wohnungen. Deshalb liegen rund drei Viertel der Kreise (297 von 400) unter dem Bundesdurchschnitt: Er wird von den Städten mit vielen und teureren Mietwohnungen geprägt.
 
 ## Erweiterung auf weitere Ebenen
 
@@ -41,6 +41,10 @@ Der AGS ist hierarchisch: Stellen 1–2 bezeichnen das Land, 1–5 den Kreis, 1�
 - Gebietsstandsänderungen (Kreis- und Gemeindereformen) explizit versionieren
 - die Quellen per API abrufen (Zensus-Datenbank, Regionalstatistik) statt per manuellem Export
 - für Gemeinden Vektor-Tiles statt einer einzelnen GeoJSON-Datei verwenden
+
+## Datenschutz
+
+Die Karte lädt keine Inhalte von Drittanbietern: Schriftart (Fira Sans, SIL Open Font License) und Kartenbibliothek (MapLibre GL JS, BSD-3-Clause) liegen unter `docs/vendor/`, Lizenztexte jeweils dabei. Es gibt keine Cookies und kein Tracking; Impressum und Datenschutzhinweis unter `docs/impressum.html`. Die Seiten sind mit `noindex` für Suchmaschinen gekennzeichnet.
 
 ## Lokal ausführen
 

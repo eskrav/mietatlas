@@ -4,11 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Nettokaltmieten nach Kreisen – Zensus 2022</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<!-- not meant for search engines: shared only as a work sample -->
+<meta name="robots" content="noindex, nofollow">
+<!-- font and map library are served from this site, so no visitor data goes to third parties -->
+<link href="vendor/maplibre/maplibre-gl.css" rel="stylesheet">
 <style>
+  @font-face { font-family: "Fira Sans"; font-style: normal; font-weight: 400; font-display: swap;
+    src: url("vendor/fonts/fira-sans-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Fira Sans"; font-style: normal; font-weight: 500; font-display: swap;
+    src: url("vendor/fonts/fira-sans-latin-500-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Fira Sans"; font-style: normal; font-weight: 700; font-display: swap;
+    src: url("vendor/fonts/fira-sans-latin-700-normal.woff2") format("woff2"); }
   :root {
     --bg: #eef1f3;          /* map background: neutral, so the data carries the colour */
     --panel: #ffffff;
@@ -39,13 +45,20 @@
     font: 400 16px/1.5 "Fira Sans", "Segoe UI", Helvetica, Arial, sans-serif;
     font-variant-numeric: tabular-nums;
   }
-  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; height: 100%; }
-  #map { min-height: 0; }
-  aside {
-    background: var(--panel); border-left: 1px solid var(--rule);
-    padding: 28px 28px calc(24px + env(safe-area-inset-bottom, 0px));
-    overflow-y: auto; display: flex; flex-direction: column; gap: 22px;
+  /* desktop: map on the left, one panel column on the right (intro, controls, footer) */
+  .layout {
+    display: grid; min-height: 100%;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "map intro" "map controls" "map footer";
   }
+  /* the map stays fixed in view while a short screen scrolls the panel */
+  #map { grid-area: map; position: sticky; top: 0; height: 100vh; align-self: start; }
+  .panel { background: var(--panel); border-left: 1px solid var(--rule); padding: 0 28px; }
+  .intro { grid-area: intro; padding-top: 28px; display: flex; flex-direction: column; gap: 18px; }
+  .controls { grid-area: controls; padding-top: 22px; display: flex; flex-direction: column; gap: 18px; }
+  footer.panel { grid-area: footer; display: flex; flex-direction: column; justify-content: flex-end;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
   h1 { font-size: 1.55rem; line-height: 1.2; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
   p { margin: 0; }
   .lede { color: var(--muted); max-width: 34em; }
@@ -57,7 +70,7 @@
   /* class boundaries sit under the gaps between swatches */
   .legend-labels { position: relative; height: 1.2em; font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
   .legend-labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
-  .legend-note { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+  .legend-unit { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
 
   label { font-weight: 500; display: block; margin-bottom: 6px; }
   input[type="search"] {
@@ -67,7 +80,7 @@
   input[type="search"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 
   /* detail for the hovered or selected Kreis */
-  .detail { border-top: 1px solid var(--rule); padding-top: 18px; min-height: 150px; }
+  .detail { border-top: 1px solid var(--rule); padding-top: 16px; min-height: 140px; }
   .detail .hint { color: var(--muted); }
   .detail h2 { font-size: 1.15rem; margin: 0 0 2px; font-weight: 500; }
   .detail .typ { color: var(--muted); font-size: 0.9rem; }
@@ -75,53 +88,59 @@
   .detail .value small { font-size: 1rem; font-weight: 400; color: var(--muted); }
   .detail .compare { color: var(--muted); font-size: 0.92rem; }
 
-  footer { margin-top: auto; font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 14px; }
+  footer { font-size: 0.78rem; color: var(--muted); }
+  footer p:first-child { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 18px; }
   footer p + p { margin-top: 6px; }
   a { color: inherit; }
   .maplibregl-ctrl-attrib { font-family: inherit; }
 
+  /* mobile: title and legend, then the map, then search and the selected Kreis right below it */
   @media (max-width: 760px) {
-    .layout { grid-template-columns: 1fr; grid-template-rows: 58vh auto; height: auto; }
-    #map { height: 58vh; }
-    aside { border-left: 0; border-top: 1px solid var(--rule); padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px)); }
+    .layout { height: auto; grid-template-columns: 1fr; grid-template-rows: auto auto auto auto;
+      grid-template-areas: "intro" "map" "controls" "footer"; }
+    #map { position: static; height: 55vh; }
+    .panel { border-left: 0; padding: 0 18px; }
+    .intro { padding-top: 18px; padding-bottom: 14px; gap: 12px; }
+    .controls { padding-top: 16px; }
+    .detail { min-height: 0; }
     h1 { font-size: 1.3rem; }
   }
 </style>
 </head>
 <body>
 <div class="layout">
-  <div id="map" role="region" aria-label="Karte der Nettokaltmieten nach Kreisen"></div>
-  <aside>
-    <div>
-      <h1>Was kostet Wohnen zur Miete in Ihrem Kreis?</h1>
-    </div>
-    <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte. Es sind Bestandsmieten aus dem Zensus 2022, keine aktuellen Angebotsmieten.</p>
-
+  <header class="panel intro">
+    <h1>Was kostet Wohnen zur Miete in Ihrem Kreis?</h1>
+    <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte. Es handelt sich um Bestandsmieten aus dem Zensus 2022, nicht um aktuelle Angebotsmieten.</p>
     <div>
       <div class="legend" id="legend" aria-hidden="true"></div>
       <div class="legend-labels" id="legend-labels"></div>
-      <p class="legend-note">Nettokaltmiete in €/m². Gleich breite Farbstufen zwischen dem 2. und 98. Perzentil; die äußeren Stufen umfassen alle niedrigeren bzw. höheren Werte.</p>
+      <p class="legend-unit">€ je m²</p>
     </div>
+  </header>
 
+  <div id="map" role="region" aria-label="Karte der Nettokaltmieten nach Kreisen"></div>
+
+  <section class="panel controls">
     <div>
       <label for="search">Kreis oder Stadt suchen</label>
       <input type="search" id="search" list="kreisliste" placeholder="z. B. Leipzig, Stadt" autocomplete="off">
       <datalist id="kreisliste"></datalist>
     </div>
-
-    <section class="detail" id="detail" aria-live="polite">
+    <div class="detail" id="detail" aria-live="polite">
       <p class="hint">Fahren Sie mit der Maus über einen Kreis oder tippen Sie darauf.</p>
-    </section>
+    </div>
+  </section>
 
-    <footer>
-      <p>Mietdaten: Zensus 2022, Tabelle 4000W-0004, © Statistische Ämter des Bundes und der Länder, Lizenz <a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>.</p>
-      <p>Geometrie: © <a href="https://gdz.bkg.bund.de">BKG</a> (2022), <a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>, Datenquellen: <a href="https://sgx.geodatenzentrum.de/web_public/gdz/datenquellen/datenquellen_vg_nuts.pdf">Verwaltungsgebiete</a>.</p>
-      <p>Prototyp von Dr. Ekaterina Kravtchenko. Code und Datenpipeline: <a href="https://github.com/eskrav/mietatlas">GitHub</a>.</p>
-    </footer>
-  </aside>
+  <footer class="panel">
+    <p>Mietdaten: Zensus 2022, Tabelle 4000W-0004, © Statistische Ämter des Bundes und der Länder, Lizenz <a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>.</p>
+    <p>Geometrie: © <a href="https://gdz.bkg.bund.de">BKG</a> (2022), <a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>, Datenquellen: <a href="https://sgx.geodatenzentrum.de/web_public/gdz/datenquellen/datenquellen_vg_nuts.pdf">Verwaltungsgebiete</a>.</p>
+    <p>Prototyp von Dr. Ekaterina Kravtchenko. Code und Datenpipeline: <a href="https://github.com/eskrav/mietatlas">GitHub</a>.</p>
+    <p><a href="impressum.html">Impressum &amp; Datenschutz</a></p>
+  </footer>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="vendor/maplibre/maplibre-gl.js"></script>
 <script>
 // Sequential palette, light (cheaper) to dark (more expensive).
 const COLORS = ["#fbeccb", "#f5c98c", "#e99a62", "#cf6a4f", "#9f4250", "#5e2a49"];
@@ -161,6 +180,9 @@ function init(summary, kreise, laender) {
       layers: [{ id: "bg", type: "background", paint: { "background-color": css("--bg") } }],
     },
     bounds: [[5.8, 47.2], [15.1, 55.1]],
+    minZoom: 4.5,                               // no zooming out past Germany
+    maxZoom: 10,                                // Kreis level; closer adds nothing without a basemap
+    maxBounds: [[1.5, 44.5], [19.5, 57.5]],     // keep Germany in view while panning
     fitBoundsOptions: { padding: 24 },
     attributionControl: false,
     dragRotate: false,
@@ -229,7 +251,7 @@ function init(summary, kreise, laender) {
 function showDetail(p, summary) {
   const diff = p.miete - summary.deutschland;
   const rel = Math.abs(diff) < 0.005 ? "genau im Bundesdurchschnitt"
-    : `${fmt.format(Math.abs(diff))} € ${diff > 0 ? "über" : "unter"} dem Bundeswert von ${fmt.format(summary.deutschland)} €`;
+    : `${fmt.format(Math.abs(diff))} € ${diff > 0 ? "über" : "unter"} dem Bundesdurchschnitt von ${fmt.format(summary.deutschland)} €`;
   document.getElementById("detail").innerHTML = `
     <h2>${p.name}</h2>
     <div class="typ">${p.BEZ}</div>
