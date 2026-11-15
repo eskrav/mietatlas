@@ -22,7 +22,7 @@ KREISE_SHP = RAW / "vg250" / "VG250_KRS.shp"
 EXPECTED_KREISE = 400          # Gebietsstand 2022: 294 Landkreise + 106 kreisfreie Staedte
 STICHTAG = "15.05.2022"        # census reference date in the Zensus table
 KNOWN_FLAGS = {"e"}            # quality flags we know how to handle ("e" = final value)
-PLAUSIBLE_RANGE = (2.0, 30.0)  # EUR/m2; outside this, something went wrong in parsing
+PLAUSIBLE_RANGE = (2.0, 20.0)  # EUR/m2; outside this, something likely went wrong in parsing
 SIMPLIFY_TOLERANCE_M = 300     # metres, applied in UTM32 before converting to WGS84
 # Colour classes: equal intervals over a trimmed range. The range runs from the 2nd to the
 # 98th percentile, so a few extreme Kreise (e.g. Munich) don't stretch every class; values
@@ -30,7 +30,8 @@ SIMPLIFY_TOLERANCE_M = 300     # metres, applied in UTM32 before converting to W
 N_CLASSES = 6
 TRIM_PERCENTILES = (2, 98)
 # Germany-wide value from the same table at "Deutschland" level. It is weighted by the
-# number of rented flats, so it is NOT the mean of the 400 Kreis values.
+# number of rented flats, so it is NOT the mean of the 400 Kreis values. In the future, 
+# consider not hardcoding this, but rather reading it from the relevant Zensus table.
 DEUTSCHLAND = 7.28
 
 
@@ -43,6 +44,7 @@ def load_rents(path: Path) -> dict:
             if len(row) != 5 or row[0] != STICHTAG:
                 continue
             _, ags, name, value, flag = row
+            assert ags not in rents, f"duplicate AGS in Zensus table: {ags}"
             rents[ags] = {
                 "name": name,
                 "miete": float(value.replace(",", ".")),  # German decimal comma
@@ -67,7 +69,8 @@ def load_kreise(path: Path) -> gpd.GeoDataFrame:
     # GF 4 = land areas; GF 2 = water areas (e.g. coastal waters, Bodensee)
     gdf = gdf[gdf["GF"] == 4][["AGS", "GEN", "BEZ", "geometry"]].reset_index(drop=True)
     assert gdf.crs.to_epsg() == 25832, f"unexpected CRS {gdf.crs}"
-    assert gdf["AGS"].is_unique and len(gdf) == EXPECTED_KREISE
+    assert gdf["AGS"].is_unique, "duplicate AGS in VG250 Kreis layer"
+    assert len(gdf) == EXPECTED_KREISE, f"expected {EXPECTED_KREISE} Kreise in VG250, got {len(gdf)}"
     return gdf
 
 
@@ -85,7 +88,7 @@ def simplify(kreise: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     overlaps appear between neighbouring Kreise (per-polygon simplify would)."""
     out = kreise.copy()
     out["geometry"] = shapely.coverage_simplify(out.geometry.values, SIMPLIFY_TOLERANCE_M)
-    assert out.geometry.is_valid.all()
+    assert out.geometry.is_valid.all(), "simplification produced invalid geometries"
     return out.to_crs(4326)
 
 

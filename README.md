@@ -10,8 +10,10 @@ Ein kleiner Prototyp, entstanden als Arbeitsprobe: ein Indikator, eine räumlich
 
 | Quelle | Inhalt | Stand | Lizenz |
 |---|---|---|---|
-| Zensus 2022, Tabelle 4000W-0004 | Durchschnittliche Nettokaltmiete (€/m²) je Kreis | Stichtag 15.05.2022 | dl-de/by-2-0, © Statistische Ämter des Bundes und der Länder |
-| BKG, Verwaltungsgebiete 1:250 000 (VG250), Ebene Kreise | Kreisgrenzen | 31.12.2022 | dl-de/by-2-0, © BKG (2022) |
+| [Zensus 2022](https://ergebnisse.zensus2022.de), Tabelle 4000W-0004 | Durchschnittliche Nettokaltmiete (€/m²) je Kreis | Stichtag 15.05.2022 | [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0), © Statistische Ämter des Bundes und der Länder, Deutschland, 2026 |
+| [BKG](https://www.bkg.bund.de), Verwaltungsgebiete 1:250 000 (VG250), Ebene Kreise | Kreisgrenzen | 31.12.2022 | [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0), © BKG (2026), [Datenquellen](https://sgx.geodatenzentrum.de/web_public/gdz/datenquellen/datenquellen_vg_nuts.pdf); Daten verändert (Grenzen vereinfacht und umprojiziert) |
+
+Die Rohdaten liegen unverändert unter `data/raw/`; ich habe sie im November 2026 manuell heruntergeladen.
 
 Wichtig für die Interpretation: Es handelt sich um **Bestandsmieten** aller vermieteten Wohnungen zum Zensusstichtag, nicht um aktuelle Angebotsmieten.
 
@@ -19,14 +21,14 @@ Wichtig für die Interpretation: Es handelt sich um **Bestandsmieten** aller ver
 
 `pipeline.py` lädt beide Quellen, prüft sie, verknüpft sie über den Amtlichen Gemeindeschlüssel (AGS) und schreibt die Daten für die Karte nach `docs/data/`. Jede Prüfung bricht den Build mit einer klaren Fehlermeldung ab:
 
-- genau 400 Kreise, eindeutige 5-stellige AGS (als Text, damit führende Nullen erhalten bleiben)
+- genau 400 Kreise, eindeutige 5-stellige AGS in beiden Quellen (als Text, damit führende Nullen erhalten bleiben)
 - nur bekannte Qualitätskennzeichen, Werte in einem plausiblen Bereich
 - nur Landflächen aus VG250 (GF = 4), keine Wasserflächen
 - vollständiger Abgleich in beiden Richtungen: kein Kreis ohne Geometrie, keine Geometrie ohne Wert
 
 Die Grenzen werden mit Coverage-Simplification vereinfacht, damit benachbarte Kreise exakt gemeinsame Grenzen behalten (keine Lücken oder Überlappungen).
 
-Bei jedem Push führt ein GitHub-Actions-Workflow die Pipeline samt Prüfungen aus und veröffentlicht die Karte nur, wenn alle Prüfungen bestehen.
+Bei jedem Push auf `main` führt ein GitHub-Actions-Workflow die Pipeline samt Prüfungen aus und veröffentlicht die Karte nur, wenn alle Prüfungen bestehen.
 
 ## Datenschutz
 
@@ -42,5 +44,4 @@ cd docs && python -m http.server   # dann http://localhost:8000
 
 ## Entstehung
 
-<!-- Bitte an die tatsächliche Arbeitsweise anpassen -->
-Mit Unterstützung von KI (Claude) entwickelt. Datenauswahl, Prüflogik und Ergebnisse habe ich geprüft und verifiziert.
+Den Code habe ich mit Unterstützung von Claude Code geschrieben; die Entscheidungen zu Datenquellen, Prüfungen und Darstellung habe ich selbst getroffen und die Ergebnisse überprüft.
