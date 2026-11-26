@@ -57,12 +57,12 @@ def observation_rows(rents: dict) -> list[tuple]:
     return rows
 
 
-def main() -> None:
+def main(url: str = DATABASE_URL) -> None:
     rents = load_rents(RENT_CSV)
     validate_rents(rents)
 
     # One transaction: committed when the block ends, rolled back on any error
-    with psycopg.connect(DATABASE_URL) as conn, conn.cursor() as cur:
+    with psycopg.connect(url) as conn, conn.cursor() as cur:
         cur.execute(SCHEMA_SQL.read_text())
         cur.execute(
             """INSERT INTO atlas.sources (source_id, name, publisher, url, licence)
