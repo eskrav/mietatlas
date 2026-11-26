@@ -134,12 +134,14 @@ def load_rents_from_db(url: str = DATABASE_URL) -> tuple[dict, float]:
     return rents, float(row[0])
 
 
-SCENARIO_INDICATORS = ("nettokaltmiete_szenario", "monatsmiete_musterwohnung")
+# per Kreis and scenario: [highest rent EUR/m2, highest rent EUR/month, EUR/month at average growth]
+SCENARIO_INDICATORS = ("nettokaltmiete_szenario", "monatsmiete_musterwohnung",
+                       "monatsmiete_durchschnitt")
 
 
 def load_scenarios_from_db(url: str = DATABASE_URL) -> dict:
     """Published scenarios of the example model, with what each run used, and the values
-    per Kreis: {"szenarien": [...], "werte": {AGS: {scenario_id: [EUR/m2, EUR/month]}}}."""
+    per Kreis: {"szenarien": [...], "werte": {AGS: {scenario_id: [values in SCENARIO_INDICATORS order]}}}."""
     with psycopg.connect(url) as conn:
         try:
             runs = conn.execute(
@@ -167,8 +169,8 @@ def load_scenarios_from_db(url: str = DATABASE_URL) -> dict:
                ORDER BY p.region_id, p.scenario_id, p.indicator_id""",
             (list(SCENARIO_INDICATORS),),
         ):
-            pair = values.setdefault(ags, {}).setdefault(scenario_id, [None, None])
-            pair[SCENARIO_INDICATORS.index(indicator_id)] = float(value)
+            row = values.setdefault(ags, {}).setdefault(scenario_id, [None] * len(SCENARIO_INDICATORS))
+            row[SCENARIO_INDICATORS.index(indicator_id)] = float(value)
     scenarios = [
         {"id": sid, "name": name, "beschreibung": desc, "basis": base,
          "modellversion": version, "datenstand": release, "parameter": params.get(run_id, {})}

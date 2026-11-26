@@ -68,9 +68,13 @@ psql -d mietatlas -f db/model_schema.sql
 
 ### Beispiel: Kappungsgrenze
 
-`db/model_kappung.sql` füllt diese Tabellen mit einem einfachen Modell zur [Kappungsgrenze](https://www.gesetze-im-internet.de/bgb/__558.html) für Mieterhöhungen in bestehenden Mietverhältnissen (§ 558 Abs. 3 BGB): Nach geltendem Recht darf die Miete in drei Jahren um höchstens 20 % steigen, in Gebieten mit angespanntem Wohnungsmarkt um höchstens 15 %. Das Modell rechnet für jeden Kreis:
+> **Ein stark vereinfachtes Demonstrationsmodell, kein realistisches Szenario.** Es soll nur zeigen, wie ein Wirkungsmodell in der Datenbank abgelegt, berechnet und nachvollziehbar veröffentlicht werden kann. Die Annahmen sind gesetzt, nicht geschätzt, und die Szenarien sind frei gewählt. Die Zahlen sagen nichts darüber aus, wie sich Mieten tatsächlich entwickeln oder wie eine Änderung der Kappungsgrenze wirken würde; dafür bräuchte es unter anderem Daten dazu, wie weit einzelne Mietverhältnisse unter der Vergleichsmiete liegen.
 
-> Miete nach drei Jahren = Miete heute × min((1 + Marktwachstum)³, 1 + Kappungsgrenze)
+`db/model_kappung.sql` füllt diese Tabellen mit einem einfachen Modell zur [Kappungsgrenze](https://www.gesetze-im-internet.de/bgb/__558.html) für Mieterhöhungen in bestehenden Mietverhältnissen (§ 558 Abs. 3 BGB): Nach geltendem Recht darf die Miete in drei Jahren um höchstens 20 % steigen, in Gebieten mit angespanntem Wohnungsmarkt um höchstens 15 %, und nie über die ortsübliche Vergleichsmiete. Die Kappungsgrenze wirkt deshalb vor allem bei Mietverhältnissen, deren Miete deutlich unter der Vergleichsmiete liegt, etwa bei langen Mietverhältnissen ohne Erhöhung. Für ein solches Mietverhältnis rechnet das Modell je Kreis die höchstmögliche Miete:
+
+> Miete nach drei Jahren = Miete heute × min(1 + Abstand zur Vergleichsmiete, 1 + Kappungsgrenze)
+
+Zum Vergleich berechnet jeder Lauf auch die Miete bei durchschnittlicher Mietentwicklung, mit dem Anstieg der Nettokaltmieten laut [Verbraucherpreisindex](https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/01/PD25_020_611.html) (2,1 % im Jahr 2024). Bei diesem Tempo greift die Kappungsgrenze nicht; dieser Wert ist daher in allen Szenarien gleich, was eine eigene Prüfabfrage sicherstellt. Das ist auch inhaltlich die wichtigste Einschränkung: Änderungen der Kappungsgrenze wirken auf Mietverhältnisse mit großem Nachholbedarf, kaum auf die Durchschnittsmiete.
 
 Eingang sind die echten Kreiswerte aus `observations`; berechnet wird in der Datenbank, je Modelllauf aus den dort gespeicherten Parameterwerten. Neben dem geltenden Recht gibt es zwei frei gewählte Beispielszenarien, die zeigen, dass dieselbe Änderung je nach Ausgestaltung ganz andere Kreise trifft:
 
@@ -82,13 +86,13 @@ Eingang sind die echten Kreiswerte aus `observations`; berechnet wird in der Dat
 
 Annahmen, als Parameter mit Art `assumption` gespeichert und damit änderbar und nachvollziehbar:
 
-- **Marktwachstum** 6 % pro Jahr: wie stark die ortsübliche Vergleichsmiete steigt, bis zu der erhöht werden darf
+- **Abstand zur Vergleichsmiete** 20 %: wie weit die Miete des Beispiel-Mietverhältnisses heute unter der ortsüblichen Vergleichsmiete liegt
 - **Angespannter Markt**: ein Kreis gilt als angespannt, wenn seine Miete mindestens dem Bundeswert entspricht (103 von 400 Kreisen). Das ist eine Näherung; tatsächlich bestimmen die Länder die Gebiete per Rechtsverordnung, häufig für einzelne Gemeinden
 - **Musterwohnung** 70 m²: für die Umrechnung in Euro pro Monat. Das Schema unterstützt Haushaltstypen, weil Wirkungsmodelle sie oft brauchen (etwa Energiekosten nach Haushaltstyp); hier hängt die Wirkung je m² aber nicht vom Haushalt ab, deshalb gibt es nur einen Musterhaushalt
 
-Das Ergebnis ist eine **Obergrenze, keine Prognose**: Das Modell nimmt an, dass jede Miete so weit steigt, wie Marktentwicklung und Kappungsgrenze es zulassen. Ein früherer Lauf mit 5 % Marktwachstum zeigt, wie geänderte Annahmen nachvollziehbar bleiben; ein unveröffentlichter Entwurf mit engerer Abgrenzung angespannter Märkte zeigt, dass nur freigegebene Szenarien in `published_results` erscheinen.
+Das Hauptergebnis ist eine **Obergrenze für ein Beispiel-Mietverhältnis, keine Prognose**: Es zeigt, wie viel die Miete höchstens steigen darf, nicht, wie viel sie tatsächlich steigt. Ein früherer Lauf mit 15 % Abstand zur Vergleichsmiete zeigt, wie geänderte Annahmen nachvollziehbar bleiben; ein unveröffentlichter Entwurf mit engerer Abgrenzung angespannter Märkte zeigt, dass nur freigegebene Szenarien in `published_results` erscheinen.
 
-`run_model.py` legt die Modelltabellen an und berechnet das Modell. `pipeline.py` schreibt anschließend die veröffentlichten Szenarien nach `docs/data/szenarien.json`: je Kreis und Szenario die Miete je m² und die Monatsmiete der Musterwohnung, dazu je Szenario Modellversion, Datenstand und die verwendeten Parameterwerte. Fehlt für einen Kreis der Karte ein Szenariowert, bricht der Build ab.
+`run_model.py` legt die Modelltabellen an und berechnet das Modell. `pipeline.py` schreibt anschließend die veröffentlichten Szenarien nach `docs/data/szenarien.json`: je Kreis und Szenario die höchstmögliche Miete je m² und pro Monat sowie die Monatsmiete bei durchschnittlicher Entwicklung, dazu je Szenario Modellversion, Datenstand und die verwendeten Parameterwerte. Fehlt für einen Kreis der Karte ein Szenariowert, bricht der Build ab.
 
 ```bash
 python run_model.py
