@@ -94,6 +94,6 @@ def test_trace_shows_the_changed_parameter(loaded):
 
 def test_model_run_is_repeatable(loaded):
     with psycopg.connect(loaded) as conn:
-        conn.execute((DB_DIR / "model_kappung.sql").read_text())
+        conn.execute((DB_DIR / "kappung_demo.sql").read_text())
     n = scalar(loaded, "SELECT count(*) FROM atlas.results")
     assert n == 5 * 400 * 6  # runs × Kreise × indicators

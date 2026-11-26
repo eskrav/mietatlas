@@ -43,6 +43,7 @@ Bei jedem Push auf `main` startet ein GitHub-Actions-Workflow eine temporäre Po
 - `regions`: eine gemeinsame Tabelle für Bund, Länder und Kreise, hierarchisch über `parent_id` verknüpft
 - `observations`: eine lange Tabelle mit Wert, Status und Quelle je Gebiet, Indikator und Jahr; weitere Indikatoren oder Jahre kommen als neue Zeilen hinzu, nicht als neue Spalten oder Tabellen
 - `indicators` und `sources`: Beschreibung, Einheit, Herkunft und Lizenz
+- `data_loads`: ein Protokoll jedes Ladevorgangs mit Zeitpunkt und Prüfsumme (SHA-256) der Rohdatei
 
 Der Ladevorgang läuft in einer einzigen Transaktion und ersetzt die Werte der jeweiligen Quelle vollständig; er lässt sich also beliebig oft wiederholen. Die Rohdaten unter `data/raw/` bleiben dabei unverändert; aus ihnen lässt sich die Datenbank jederzeit neu aufbauen.
 
@@ -58,10 +59,10 @@ psql -d mietatlas -f db/queries.sql
 
 - `parameters`: jede Modellannahme mit Basiswert, Einheit, Art (politischer Hebel, Definition, empirischer Zusammenhang oder Annahme), Quelle und dem Wertebereich, für den das Modell geprüft ist
 - `scenarios` und `scenario_overrides`: Szenarien speichern nur die Parameterwerte, die sie gegenüber der Basis ändern
-- `model_runs` und `run_parameters`: jeder Modelllauf mit Modellversion, Datenstand und einer Kopie der verwendeten Parameterwerte
+- `model_runs` und `run_parameters`: jeder Modelllauf mit Modellversion, einem Verweis auf den Ladevorgang, dessen Daten er verwendet hat, und einer Kopie der verwendeten Parameterwerte
 - `results`: die Ergebnisse je Lauf, Gebiet und Haushaltstyp; die Sicht `published_results` liefert nur den jeweils neuesten Lauf veröffentlichter Szenarien
 
-So lässt sich jede veröffentlichte Zahl auf Lauf, Modellversion und Parameterwerte zurückführen, auch wenn sich Annahmen später ändern. Das Schema baut auf den Tabellen aus `db/schema.sql` auf:
+So lässt sich jede veröffentlichte Zahl auf Lauf, Modellversion, Rohdatei und Parameterwerte zurückführen, auch wenn sich Annahmen später ändern. Das Schema baut auf den Tabellen aus `db/schema.sql` auf:
 
 ```bash
 python load_db.py
@@ -72,7 +73,7 @@ psql -d mietatlas -f db/model_schema.sql
 
 > **Ein stark vereinfachtes Demonstrationsmodell, kein realistisches Szenario.** Es soll nur zeigen, wie ein Wirkungsmodell in der Datenbank abgelegt, berechnet und nachvollziehbar veröffentlicht werden kann. Die Annahmen sind gesetzt, nicht geschätzt, und die Szenarien sind frei gewählt. Die Zahlen sagen nichts darüber aus, wie sich Mieten tatsächlich entwickeln oder wie eine Änderung der Kappungsgrenze wirken würde; dafür bräuchte es unter anderem Daten dazu, wie weit einzelne Mietverhältnisse unter der Vergleichsmiete liegen.
 
-`db/model_kappung.sql` füllt diese Tabellen mit einem einfachen Modell zur [Kappungsgrenze](https://www.gesetze-im-internet.de/bgb/__558.html) für Mieterhöhungen in bestehenden Mietverhältnissen (§ 558 Abs. 3 BGB): Nach geltendem Recht darf die Miete bei Erhöhungen bis zur ortsüblichen Vergleichsmiete in drei Jahren um höchstens 20 % steigen (Erhöhungen wegen Modernisierung oder Betriebskosten zählen nicht mit). In Gemeinden oder Gemeindeteilen, die das jeweilige Land per Rechtsverordnung als angespannten Wohnungsmarkt bestimmt hat, sind es höchstens 15 %. Die Kappungsgrenze wirkt deshalb vor allem bei Mietverhältnissen, deren Miete deutlich unter der Vergleichsmiete liegt, etwa bei langen Mietverhältnissen ohne Erhöhung. Das Modell betrachtet je Kreis ein Beispiel-Mietverhältnis, das 2022 die Durchschnittsmiete des Kreises zahlt und um einen festen Abstand unter der Vergleichsmiete liegt, und rechnet dessen höchstmögliche Miete:
+`db/model_kappung.sql` enthält als Modellcode eine Funktion für einen Modelllauf, `db/kappung_demo.sql` die Parameter, Szenarien und Beispielläufe. Zusammen bilden sie ein einfaches Modell zur [Kappungsgrenze](https://www.gesetze-im-internet.de/bgb/__558.html) für Mieterhöhungen in bestehenden Mietverhältnissen (§ 558 Abs. 3 BGB): Nach geltendem Recht darf die Miete bei Erhöhungen bis zur ortsüblichen Vergleichsmiete in drei Jahren um höchstens 20 % steigen (Erhöhungen wegen Modernisierung oder Betriebskosten zählen nicht mit). In Gemeinden oder Gemeindeteilen, die das jeweilige Land per Rechtsverordnung als angespannten Wohnungsmarkt bestimmt hat, sind es höchstens 15 %. Die Kappungsgrenze wirkt deshalb vor allem bei Mietverhältnissen, deren Miete deutlich unter der Vergleichsmiete liegt, etwa bei langen Mietverhältnissen ohne Erhöhung. Das Modell betrachtet je Kreis ein Beispiel-Mietverhältnis, das 2022 die Durchschnittsmiete des Kreises zahlt und um einen festen Abstand unter der Vergleichsmiete liegt, und rechnet dessen höchstmögliche Miete:
 
 > Miete nach drei Jahren = Ausgangsmiete (Zensus 2022) × min(1 + Abstand zur Vergleichsmiete, 1 + Kappungsgrenze)
 
@@ -92,9 +93,9 @@ Annahmen, als Parameter mit Art `assumption` gespeichert und damit änderbar und
 - **Angespannter Markt**: ein Kreis gilt als angespannt, wenn seine Miete mindestens dem Bundeswert entspricht (103 von 400 Kreisen). Das ist eine Näherung; tatsächlich bestimmen die Länder per Rechtsverordnung einzelne Gemeinden oder Gemeindeteile, nicht ganze Kreise nach ihrem Mietniveau; „geltendes Recht“ im Modell entspricht deshalb nicht überall der tatsächlichen Verordnungslage
 - **Musterwohnung** 70 m²: für die Umrechnung in Euro pro Monat. Das Schema unterstützt Haushaltstypen, weil Wirkungsmodelle sie oft brauchen (etwa Energiekosten nach Haushaltstyp); hier hängt die Wirkung je m² aber nicht vom Haushalt ab, deshalb gibt es nur einen Musterhaushalt
 
-Das Hauptergebnis ist eine **Obergrenze für ein Beispiel-Mietverhältnis, keine Prognose**: Es zeigt, wie viel die Miete höchstens steigen darf, nicht, wie viel sie tatsächlich steigt. Ein früherer Lauf mit 15 % Abstand zur Vergleichsmiete zeigt, wie geänderte Annahmen nachvollziehbar bleiben; ein unveröffentlichter Entwurf mit engerer Abgrenzung angespannter Märkte zeigt, dass nur freigegebene Szenarien in `published_results` erscheinen.
+Das Hauptergebnis ist eine **Obergrenze für ein Beispiel-Mietverhältnis, keine Prognose**: Es zeigt, wie viel die Miete höchstens steigen darf, nicht, wie viel sie tatsächlich steigt. Ein früherer Lauf mit 15 % Abstand zur Vergleichsmiete zeigt, wie geänderte Annahmen nachvollziehbar bleiben; ein unveröffentlichter Entwurf mit engerer Abgrenzung angespannter Märkte zeigt, dass nur freigegebene Szenarien in `published_results` erscheinen. Beides ist für die Demonstration gestellt: `db/kappung_demo.sql` setzt die Modelltabellen bei jedem Lauf zurück und baut auch die Laufhistorie neu auf, und die Modellversionen sind dort fest eingetragen. In einem echten System würden Läufe nur angehängt und die Version aus dem Code-Stand übernommen.
 
-`run_model.py` legt die Modelltabellen an und berechnet das Modell. `pipeline.py` schreibt anschließend die veröffentlichten Szenarien nach `docs/data/szenarien.json`: je Kreis und Szenario die höchstmögliche Miete je m² und pro Monat die Monatsmiete bei durchschnittlicher Entwicklung sowie die Einstufung des Kreises (angespannt oder nicht), die angewendete Kappungsgrenze und den höchstmöglichen Anstieg, dazu je Szenario Modellversion, Datenstand und die verwendeten Parameterwerte. Fehlt für einen Kreis der Karte ein Szenariowert, bricht der Build ab. Die Karte zeigt diese Werte nur an; sie rechnet nichts davon selbst nach, die Modelllogik liegt allein in der Datenbank.
+`run_model.py` legt die Modelltabellen an und berechnet das Modell. `pipeline.py` schreibt anschließend die veröffentlichten Szenarien nach `docs/data/szenarien.json`: je Kreis und Szenario die höchstmögliche Miete je m² und pro Monat die Monatsmiete bei durchschnittlicher Entwicklung sowie die Einstufung des Kreises (angespannt oder nicht), die angewendete Kappungsgrenze und den höchstmöglichen Anstieg, dazu je Szenario Modellversion, Datenstand, Prüfsumme der Rohdatei und die verwendeten Parameterwerte. Fehlt für einen Kreis der Karte ein Szenariowert, bricht der Build ab. Die Karte zeigt diese Werte nur an; sie rechnet nichts davon selbst nach, die Modelllogik liegt allein in der Datenbank.
 
 ```bash
 python run_model.py

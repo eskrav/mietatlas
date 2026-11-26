@@ -2,7 +2,8 @@
 
     python run_model.py
 
-Runs db/model_schema.sql and db/model_kappung.sql against DATABASE_URL (the same
+Runs db/model_schema.sql (tables), db/model_kappung.sql (the model function) and
+db/kappung_demo.sql (scenarios and example runs) against DATABASE_URL (the same
 database load_db.py fills; run that first). Safe to run repeatedly.
 """
 from pathlib import Path
@@ -12,7 +13,7 @@ import psycopg
 from db import DATABASE_URL
 
 DB_DIR = Path(__file__).parent / "db"
-MODEL_FILES = ("model_schema.sql", "model_kappung.sql")
+MODEL_FILES = ("model_schema.sql", "model_kappung.sql", "kappung_demo.sql")
 
 
 def main(url: str = DATABASE_URL) -> None:

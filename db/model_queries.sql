@@ -61,9 +61,9 @@ LIMIT 10;
 
 -- name: trace_published_number
 -- Where does one published number come from? Berlin, Kappungsgrenze 10 % in tight markets:
--- run, model version, data release and every parameter value used
+-- run, model version, the data load (raw file and checksum) and every parameter value used
 WITH published_run AS (
-    SELECT DISTINCT ON (scenario_id) run_id, scenario_id, model_version, data_release
+    SELECT DISTINCT ON (scenario_id) run_id, scenario_id, model_version, data_release, load_id
     FROM model_runs
     WHERE scenario_id = 'kappung_10'
     ORDER BY scenario_id, run_at DESC, run_id DESC
@@ -77,8 +77,12 @@ SELECT res.value                      AS veroeffentlichter_wert,
        p.unit,
        p.kind,
        rp.value <> p.baseline_value   AS weicht_von_basis_ab,
-       src.name                       AS quelle
+       src.name                       AS quelle,
+       l.file_name                    AS rohdatei,
+       left(l.file_sha256, 12)        AS rohdatei_sha256,
+       l.loaded_at                    AS geladen_am
 FROM published_run pr
+JOIN data_loads l USING (load_id)
 JOIN results res
   ON res.run_id = pr.run_id
  AND res.region_id = '11000'
@@ -165,3 +169,7 @@ FROM published_results
 WHERE indicator_id = 'monatsmiete_durchschnitt'
 GROUP BY region_id
 HAVING min(value) <> max(value);
+
+-- name: check_runs_without_data_load
+-- Every run must point to the data load it used (expected: no rows)
+SELECT run_id, scenario_id FROM model_runs WHERE load_id IS NULL;

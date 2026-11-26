@@ -7,6 +7,7 @@ Reads data/raw/ with the same parser and checks as pipeline.py, creates the sche
 if needed, and replaces this source's rows in one transaction: either everything is
 loaded, or nothing changes. Safe to run repeatedly.
 """
+import hashlib
 from pathlib import Path
 
 import psycopg
@@ -98,6 +99,14 @@ def main(url: str = DATABASE_URL) -> None:
         ) as copy:
             for row in observation_rows(rents):
                 copy.write_row(row)
+
+        # Log the load with the checksum of the raw file, so model runs can refer to it
+        cur.execute(
+            """INSERT INTO atlas.data_loads (source_id, file_name, file_sha256, n_observations)
+               VALUES (%s, %s, %s, %s)""",
+            (SOURCE["source_id"], RENT_CSV.name,
+             hashlib.sha256(RENT_CSV.read_bytes()).hexdigest(), len(rents) + 1),
+        )
 
         cur.execute("SELECT level, count(*) FROM atlas.regions GROUP BY level ORDER BY count(*)")
         regions = ", ".join(f"{n} {level}" for level, n in cur.fetchall())

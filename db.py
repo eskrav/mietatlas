@@ -55,9 +55,10 @@ def load_scenarios_from_db(url: str = DATABASE_URL) -> dict:
         try:
             runs = conn.execute(
                 """SELECT s.scenario_id, s.name, s.description, s.is_baseline,
-                          pr.run_id, pr.model_version, pr.data_release
+                          pr.run_id, pr.model_version, pr.data_release, l.file_sha256
                    FROM atlas.published_runs pr
                    JOIN atlas.scenarios s USING (scenario_id)
+                   LEFT JOIN atlas.data_loads l USING (load_id)
                    ORDER BY s.is_baseline DESC, s.scenario_id"""
             ).fetchall()
         except psycopg.errors.UndefinedTable:
@@ -82,7 +83,8 @@ def load_scenarios_from_db(url: str = DATABASE_URL) -> dict:
             row[SCENARIO_INDICATORS.index(indicator_id)] = float(value)
     scenarios = [
         {"id": sid, "name": name, "beschreibung": desc, "basis": base,
-         "modellversion": version, "datenstand": release, "parameter": params.get(run_id, {})}
-        for sid, name, desc, base, run_id, version, release in runs
+         "modellversion": version, "datenstand": release, "rohdaten_sha256": sha,
+         "parameter": params.get(run_id, {})}
+        for sid, name, desc, base, run_id, version, release, sha in runs
     ]
     return {"szenarien": scenarios, "werte": values}

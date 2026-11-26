@@ -52,3 +52,10 @@ def test_missing_kreis_is_rejected(export):
     broken = {**export, "werte": {a: v for a, v in export["werte"].items() if a != "11000"}}
     with pytest.raises(DataCheckError, match="scenario values for 399 Kreise"):
         validate_scenarios(broken, rents)
+
+
+def test_scenarios_name_the_raw_file_they_were_computed_from(export):
+    import hashlib
+
+    expected = hashlib.sha256(RENT_CSV.read_bytes()).hexdigest()
+    assert {s["rohdaten_sha256"] for s in export["szenarien"]} == {expected}

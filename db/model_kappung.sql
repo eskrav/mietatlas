@@ -15,71 +15,10 @@
 -- proxy; the real areas are designated per Gemeinde by the Länder) and the size of the model
 -- flat. The main result is an upper bound for a stylised tenancy, not a forecast.
 --
--- Run after load_db.py and db/model_schema.sql:
---   psql -d mietatlas -f db/model_kappung.sql
--- Safe to run repeatedly: the model tables are emptied first.
-
-BEGIN;
-
-TRUNCATE atlas.results, atlas.run_parameters, atlas.model_runs, atlas.scenario_overrides,
-         atlas.scenarios, atlas.parameters, atlas.household_types RESTART IDENTITY CASCADE;
-
-INSERT INTO atlas.sources (source_id, name, publisher, url, licence) VALUES
-  ('bgb_558', '§ 558 BGB, Mieterhöhung bis zur ortsüblichen Vergleichsmiete',
-   'Bundesministerium der Justiz', 'https://www.gesetze-im-internet.de/bgb/__558.html',
-   'amtliches Werk'),
-  ('destatis_vpi_2024', 'Verbraucherpreisindex, Jahr 2024: Nettokaltmieten +2,1 %',
-   'Statistisches Bundesamt',
-   'https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/01/PD25_020_611.html',
-   'dl-de/by-2-0')
-ON CONFLICT (source_id) DO NOTHING;
-
-INSERT INTO atlas.indicators (indicator_id, name, unit, description) VALUES
-  ('nettokaltmiete_szenario', 'Nettokaltmiete nach Ablauf des Szenarios', 'EUR/m²',
-   'Modellergebnis: höchstmögliche Miete nach drei Jahren für ein Mietverhältnis mit Abstand zur Vergleichsmiete'),
-  ('monatsmiete_musterwohnung', 'Monatliche Nettokaltmiete der Musterwohnung', 'EUR/Monat',
-   'Modellergebnis: Nettokaltmiete nach Ablauf des Szenarios × Wohnfläche der Musterwohnung'),
-  ('monatsmiete_durchschnitt', 'Monatliche Nettokaltmiete der Musterwohnung bei durchschnittlicher Mietentwicklung', 'EUR/Monat',
-   'Modellergebnis: Miete heute × (1 + Mietindex-Anstieg)^Jahre, höchstens bis zur Kappungsgrenze, × Wohnfläche'),
-  ('markt_angespannt', 'Kreis gilt im Modell als angespannter Markt', '1 = ja, 0 = nein',
-   'Modellergebnis: Einstufung des Kreises nach dem Parameter schwelle_angespannt'),
-  ('kappungsgrenze_angewendet', 'Im Kreis angewendete Kappungsgrenze', 'Anteil in 3 Jahren',
-   'Modellergebnis: kappung_angespannt oder kappung_allgemein, je nach Einstufung des Kreises'),
-  ('anstieg_hoechstens', 'Höchstmöglicher Mietanstieg des Beispiel-Mietverhältnisses', 'Anteil in 3 Jahren',
-   'Modellergebnis: der kleinere Wert aus Abstand zur Vergleichsmiete und angewendeter Kappungsgrenze')
-ON CONFLICT (indicator_id) DO UPDATE
-SET name = EXCLUDED.name, unit = EXCLUDED.unit, description = EXCLUDED.description;
-
--- One model household: in this model the effect per m² does not depend on the household
-INSERT INTO atlas.household_types (household_type_id, label) VALUES
-  ('musterhaushalt', 'Musterhaushalt (Wohnfläche siehe Parameter wohnflaeche)');
-
-INSERT INTO atlas.parameters
-    (parameter_id, name, unit, baseline_value, kind, source_id, valid_min, valid_max) VALUES
-  ('kappung_allgemein',   'Kappungsgrenze, allgemein',               'Anteil in 3 Jahren', 0.20, 'lever',        'bgb_558', 0,   0.30),
-  ('kappung_angespannt',  'Kappungsgrenze, angespannte Märkte',      'Anteil in 3 Jahren', 0.15, 'lever',        'bgb_558', 0,   0.30),
-  ('horizont',            'Betrachtungszeitraum',                    'Jahre',              3,    'definitional', 'bgb_558', 3,   3),
-  ('rueckstand',          'Abstand der Miete zur ortsüblichen Vergleichsmiete', 'Anteil', 0.20, 'assumption', NULL,  0,   0.5),
-  ('mietindex_anstieg',   'Durchschnittlicher Anstieg der Nettokaltmieten pro Jahr', 'Anteil pro Jahr', 0.021, 'empirical', 'destatis_vpi_2024', 0, 0.1),
-  ('schwelle_angespannt', 'Kreis gilt als angespannt ab Miete ≥ Schwelle × Bundeswert',
-                                                                      'Faktor',             1.0,  'assumption',   NULL,      0.5, 2.0),
-  ('wohnflaeche',         'Wohnfläche der Musterwohnung',            'm²',                 70,   'assumption',   NULL,      20,  200);
-
-INSERT INTO atlas.scenarios (scenario_id, name, description, is_baseline, is_published) VALUES
-  ('geltendes_recht', 'Geltendes Recht',
-   '20 % in drei Jahren, 15 % in angespannten Märkten (§ 558 Abs. 3 BGB)', true, true),
-  ('kappung_10', 'Kappungsgrenze 10 % in angespannten Märkten',
-   'Beispielszenario: angespannte Märkte 10 % in drei Jahren, sonst unverändert 20 %', false, true),
-  ('kappung_15_ueberall', 'Kappungsgrenze 15 % überall',
-   'Beispielszenario: 15 % in drei Jahren in allen Kreisen, nicht nur in angespannten Märkten', false, true),
-  ('schwelle_120', 'Engere Abgrenzung angespannter Märkte (Entwurf)',
-   'Wie geltendes Recht, aber angespannt erst ab 120 % des Bundeswerts; intern, nicht veröffentlicht',
-   false, false);
-
-INSERT INTO atlas.scenario_overrides (scenario_id, parameter_id, value) VALUES
-  ('kappung_10',          'kappung_angespannt',  0.10),
-  ('kappung_15_ueberall', 'kappung_allgemein',   0.15),
-  ('schwelle_120',        'schwelle_angespannt', 1.2);
+-- This file is the model code: one function that performs a model run. It reads its
+-- parameter values only from the copy stored for the run, records which data load it used,
+-- and stores how it treated each Kreis. The scenarios and the example runs are in
+-- db/kappung_demo.sql. run_model.py executes both, after db/model_schema.sql.
 
 -- One model run: copy the parameter set, then compute the results from the real Kreis rents
 CREATE OR REPLACE FUNCTION atlas.run_kappung_model(
@@ -87,11 +26,22 @@ CREATE OR REPLACE FUNCTION atlas.run_kappung_model(
 ) RETURNS integer
 LANGUAGE plpgsql AS $$
 DECLARE
-    v_run_id integer;
+    v_run_id  integer;
+    v_load_id integer;
 BEGIN
+    -- The input data: the latest load of the Zensus rent table
+    SELECT load_id INTO v_load_id
+    FROM atlas.data_loads
+    WHERE source_id = 'zensus2022_4000W-0004'
+    ORDER BY loaded_at DESC, load_id DESC
+    LIMIT 1;
+    IF v_load_id IS NULL THEN
+        RAISE EXCEPTION 'no data load found for the Zensus rent table; run load_db.py first';
+    END IF;
+
     -- clock_timestamp(): the actual time, even when several runs share one transaction
-    INSERT INTO atlas.model_runs (scenario_id, model_version, data_release, run_at)
-    VALUES (p_scenario_id, p_model_version, p_data_release, clock_timestamp())
+    INSERT INTO atlas.model_runs (scenario_id, model_version, data_release, load_id, run_at)
+    VALUES (p_scenario_id, p_model_version, p_data_release, v_load_id, clock_timestamp())
     RETURNING run_id INTO v_run_id;
 
     INSERT INTO atlas.run_parameters (run_id, parameter_id, value)
@@ -176,16 +126,3 @@ BEGIN
     RETURN v_run_id;
 END;
 $$;
-
--- An earlier run with a 15 % gap, as if that assumption was changed later;
--- run_parameters keeps the old value, so the earlier results stay explainable.
-UPDATE atlas.parameters SET baseline_value = 0.15 WHERE parameter_id = 'rueckstand';
-SELECT atlas.run_kappung_model('geltendes_recht', 'v0.1.0', 'zensus2022');
-UPDATE atlas.parameters SET baseline_value = 0.20 WHERE parameter_id = 'rueckstand';
-
--- Current runs for every scenario
-SELECT atlas.run_kappung_model(scenario_id, 'v0.2.0', 'zensus2022')
-FROM atlas.scenarios
-ORDER BY is_baseline DESC, scenario_id;
-
-COMMIT;

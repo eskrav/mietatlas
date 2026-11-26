@@ -48,3 +48,20 @@ def test_regions_hierarchy(db):
                WHERE k.level = 'kreis' AND (p.level <> 'land' OR left(k.region_id, 2) <> p.region_id)"""
         ).fetchall()
     assert wrong == []
+
+
+def test_each_load_is_logged_with_the_checksum_of_the_raw_file(db):
+    import hashlib
+
+    load_db.main(db)
+    with psycopg.connect(db) as conn:
+        n_before = conn.execute("SELECT count(*) FROM atlas.data_loads").fetchone()[0]
+    load_db.main(db)
+    with psycopg.connect(db) as conn:
+        n, sha, n_obs = conn.execute(
+            """SELECT (SELECT count(*) FROM atlas.data_loads), file_sha256, n_observations
+               FROM atlas.data_loads ORDER BY load_id DESC LIMIT 1"""
+        ).fetchone()
+    assert n == n_before + 1
+    assert sha == hashlib.sha256(RENT_CSV.read_bytes()).hexdigest()
+    assert n_obs == 401
