@@ -195,7 +195,7 @@
 <div class="layout">
   <header class="panel intro">
     <h1>Was kostet Wohnen zur Miete in Ihrem Kreis?</h1>
-    <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte. Es handelt sich um Bestandsmieten aus dem Zensus 2022, nicht um aktuelle Angebotsmieten. Dazu eine vereinfachte Beispielrechnung zur Kappungsgrenze für Mieterhöhungen.</p>
+    <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte in Deutschland. Es handelt sich um Bestandsmieten aus dem Zensus 2022, nicht um aktuelle Angebotsmieten. Dazu eine vereinfachte Beispielrechnung zur Kappungsgrenze für Mieterhöhungen.</p>
     <div id="view-switch" hidden>
       <label for="view">Ansicht</label>
       <select id="view"></select>
@@ -583,7 +583,7 @@ function scenarioBlock(p, summary) {
     </div>
     <p class="note">Höchstmögliche Miete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach
       ${fmtEur.format(par.horizont)} Jahren für ein Mietverhältnis, das 2022 die Durchschnittsmiete des
-      Kreises zahlt und damit ${pct(par.rueckstand)} unter der Vergleichsmiete liegt. ${kreisLine}</p>
+      Kreises zahlt. Angenommen wird, dass die Vergleichsmiete ${pct(par.rueckstand)} darüber liegt. ${kreisLine}</p>
     <table>
       <thead><tr><th scope="col">Szenario</th><td>höchstens</td><td></td></tr></thead>
       <tbody>${rows}</tbody>

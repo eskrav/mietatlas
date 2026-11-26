@@ -1,6 +1,6 @@
 # Nettokaltmieten nach Kreisen (Zensus 2022)
 
-Interaktive Karte der durchschnittlichen Nettokaltmiete je Quadratmeter für alle 400 Kreise und kreisfreien Städte, mit automatisierter Datenpipeline, Qualitätsprüfungen und einem vereinfachten Beispielmodell zur Kappungsgrenze, dessen Szenarien sich auf der Karte umschalten lassen.
+Interaktive Karte der durchschnittlichen Nettokaltmiete je Quadratmeter für alle 400 Kreise und kreisfreien Städte in Deutschland, mit automatisierter Datenpipeline, Qualitätsprüfungen und einem vereinfachten Beispielmodell zur Kappungsgrenze, dessen Szenarien sich auf der Karte umschalten lassen.
 
 **Karte:** https://eskrav.github.io/mietatlas/
 
@@ -133,9 +133,13 @@ Die [Kappungsgrenze](https://www.gesetze-im-internet.de/bgb/__558.html) gilt fü
 
 ### Modell
 
-Das Modell betrachtet je Kreis ein Beispiel-Mietverhältnis, das 2022 die Durchschnittsmiete des Kreises zahlt und um einen festen Abstand unter der Vergleichsmiete liegt, und rechnet dessen höchstmögliche Miete:
+Das Modell betrachtet je Kreis ein Beispiel-Mietverhältnis, das 2022 die Durchschnittsmiete des Kreises zahlt und dessen ortsübliche Vergleichsmiete um einen festen Abstand darüber liegt, und rechnet dessen höchstmögliche Miete.
+
+Für eine solche Mieterhöhung gelten zwei Grenzen zugleich: Die Miete darf höchstens bis zur ortsüblichen Vergleichsmiete steigen, und sie darf in drei Jahren höchstens um die Kappungsgrenze steigen. Maßgeblich ist die niedrigere der beiden, daher das Minimum:
 
 > Miete nach drei Jahren = Ausgangsmiete (Zensus 2022) × min(1 + Abstand zur Vergleichsmiete, 1 + Kappungsgrenze)
+
+Beispiel Berlin: Ausgangsmiete 7,67 €/m², Vergleichsmiete im Modell 20 % darüber (9,20 €/m²), Kappungsgrenze 15 % (8,82 €/m²). Die Kappungsgrenze ist die niedrigere Grenze, die höchstmögliche Miete beträgt also 8,82 €/m².
 
 Zum Vergleich berechnet jeder Lauf auch die Miete bei durchschnittlicher Mietentwicklung, mit dem Anstieg der Nettokaltmieten im [Verbraucherpreisindex](https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/01/PD25_020_611.html) (2,1 % im Jahr 2024). Bei diesem Tempo greift die Kappungsgrenze nicht; dieser Wert ist daher in allen Szenarien gleich, was eine eigene Prüfabfrage sicherstellt.
 
@@ -153,7 +157,7 @@ Neben dem geltenden Recht gibt es zwei frei gewählte Beispielszenarien, die zei
 
 Als Parameter mit Art `assumption` gespeichert und damit änderbar und nachvollziehbar:
 
-- **Abstand zur Vergleichsmiete** 20 %: wie weit die Miete des Beispiel-Mietverhältnisses 2022 unter der ortsüblichen Vergleichsmiete liegt
+- **Abstand zur Vergleichsmiete** 20 %: wie weit die ortsübliche Vergleichsmiete über der Miete liegt, die das Beispiel-Mietverhältnis 2022 zahlt
 - **Angespannter Markt**: ein Kreis gilt als angespannt, wenn seine Miete mindestens dem Bundeswert entspricht (103 von 400 Kreisen). Das ist eine Näherung; tatsächlich bestimmen die Länder per Rechtsverordnung einzelne Gemeinden oder Gemeindeteile, nicht ganze Kreise nach ihrem Mietniveau; „geltendes Recht“ im Modell entspricht deshalb nicht überall der tatsächlichen Verordnungslage
 - **Musterwohnung** 70 m²: für die Umrechnung in Euro pro Monat. Das Schema unterstützt Haushaltstypen, weil Wirkungsmodelle sie oft brauchen (etwa Energiekosten nach Haushaltstyp); hier hängt die Wirkung je m² aber nicht vom Haushalt ab, deshalb gibt es nur einen Musterhaushalt
 
