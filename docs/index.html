@@ -48,16 +48,24 @@
     font: 400 16px/1.5 "Fira Sans", "Segoe UI", Helvetica, Arial, sans-serif;
     font-variant-numeric: tabular-nums;
   }
-  /* desktop: map on the left, one panel column on the right (intro, controls, footer) */
+  /* wide screens: three columns. Left: intro, legend, search, the Kreis under the cursor;
+     middle: map; right: the example calculation for the selected Kreis */
   .layout {
     display: grid; min-height: 100%;
-    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-columns: 340px minmax(0, 1fr) 360px;
     grid-template-rows: auto auto 1fr;
-    grid-template-areas: "map intro" "map controls" "map footer";
+    grid-template-areas: "intro map calc" "controls map calc" "footer map calc";
   }
   /* the map stays fixed in view while a short screen scrolls the panel */
   #map { grid-area: map; position: sticky; top: 0; height: 100vh; align-self: start; }
   .panel { background: var(--panel); border-left: 1px solid var(--rule); padding: 0 28px; }
+  .intro, .controls, footer.panel { border-left: 0; border-right: 1px solid var(--rule); }
+  .calc { grid-area: calc; padding: 28px 24px 24px; }
+  .calc-inner { position: sticky; top: 28px; }   /* stays in view while the page scrolls */
+  #calc:not(:empty) { border-top: 1px solid var(--rule); padding-top: 16px; }
+  #calc h2 { font-size: 1.05rem; font-weight: 500; margin: 0 0 2px; white-space: nowrap; }
+  .calc .kreis { color: var(--muted); font-size: 0.9rem; margin-bottom: 12px; }
+  .calc .hint { color: var(--muted); }
   .intro { grid-area: intro; padding-top: 28px; display: flex; flex-direction: column; gap: 18px; }
   .controls { grid-area: controls; padding-top: 22px; display: flex; flex-direction: column; gap: 18px; }
   footer.panel { grid-area: footer; display: flex; flex-direction: column; justify-content: flex-end;
@@ -107,7 +115,7 @@
   #suggestions .none { color: var(--muted); cursor: default; }
 
   /* detail for the hovered or selected Kreis */
-  .detail { border-top: 1px solid var(--rule); padding-top: 16px; min-height: 140px; }
+  .detail { padding-bottom: 16px; }
   .detail .hint { color: var(--muted); }
   .detail h2 { font-size: 1.15rem; margin: 0 0 2px; font-weight: 500; }
   .detail .typ { color: var(--muted); font-size: 0.9rem; }
@@ -116,7 +124,7 @@
   .detail .compare { color: var(--muted); font-size: 0.92rem; }
 
   /* example model: Kappungsgrenze scenarios for the shown Kreis */
-  .scenarios { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--rule); }
+  .scenarios { margin-top: 0; }
   .scenarios h3 { font-size: 0.95rem; font-weight: 500; margin: 0 0 4px; }
   .scenarios .note { color: var(--muted); font-size: 0.85rem; }
   .scenarios table { width: 100%; border-collapse: collapse; margin: 8px 0 6px; font-size: 0.9rem; }
@@ -134,7 +142,7 @@
   .scenarios .info[aria-expanded="true"] { background: var(--focus); color: var(--panel); }
   .scenarios .info:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .bubble {
-    position: absolute; z-index: 10; left: 0; right: 0; top: 2.1rem;
+    position: absolute; z-index: 10; left: 0; right: 0; top: 2.2rem;
     background: var(--panel); color: var(--ink); border: 1px solid var(--rule); border-radius: 8px;
     box-shadow: 0 8px 22px rgba(0,0,0,.18); padding: 10px 12px; font-size: 0.85rem;
   }
@@ -152,16 +160,31 @@
   footer p + p { margin-top: 6px; }
   a { color: inherit; }
   .maplibregl-ctrl-attrib { font-family: inherit; }
+  /* hover label on the map: name and value of the Kreis under the cursor */
+  .hover-tip .maplibregl-popup-content {
+    font: inherit; font-size: 0.85rem; line-height: 1.35; padding: 6px 10px; border-radius: 6px;
+    background: var(--panel); color: var(--ink); box-shadow: 0 4px 14px rgba(0,0,0,.18); pointer-events: none;
+  }
+  .hover-tip .maplibregl-popup-tip { display: none; }
+  .hover-tip small { color: var(--muted); }
 
-  /* mobile: title and legend, then the map, then search and the selected Kreis right below it */
+  /* medium screens: map on the left, one panel column on the right, calculation under the search */
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: minmax(0, 1fr) 380px; grid-template-rows: auto auto auto 1fr;
+      grid-template-areas: "map intro" "map controls" "map calc" "map footer"; }
+    .intro, .controls, footer.panel, .calc { border-right: 0; border-left: 1px solid var(--rule); }
+    .calc { padding-top: 20px; }
+    .calc-inner { position: static; border-top: 1px solid var(--rule); padding-top: 16px; }
+  }
+  /* mobile: title and legend, then the map, then search, the Kreis and its calculation */
   @media (max-width: 760px) {
-    .layout { height: auto; grid-template-columns: 1fr; grid-template-rows: auto auto auto auto;
-      grid-template-areas: "intro" "map" "controls" "footer"; }
+    .layout { height: auto; grid-template-columns: 1fr; grid-template-rows: auto auto auto auto auto;
+      grid-template-areas: "intro" "map" "controls" "calc" "footer"; }
     #map { position: relative; height: 55vh; }   /* relative, not static: the map canvas is positioned inside it */
-    .panel { border-left: 0; padding: 0 18px; }
+    .panel, .intro, .controls, footer.panel, .calc { border-left: 0; border-right: 0; padding: 0 18px; }
+    .calc { padding-top: 16px; }
     .intro { padding-top: 18px; padding-bottom: 14px; gap: 12px; }
     .controls { padding-top: 16px; }
-    .detail { min-height: 0; }
     h1 { font-size: 1.3rem; }
     body.searching footer.panel { padding-bottom: 70vh; }
   }
@@ -200,10 +223,17 @@
         <ul id="suggestions" role="listbox" hidden></ul>
       </div>
     </div>
-    <div class="detail" id="detail" aria-live="polite">
-      <p class="hint">Fahren Sie mit der Maus über einen Kreis oder tippen Sie darauf.</p>
-    </div>
   </section>
+
+  <aside class="panel calc" aria-live="polite">
+    <div class="calc-inner">
+      <div class="detail" id="detail">
+        <p class="hint">Klicken Sie auf einen Kreis oder suchen Sie ihn: Hier erscheinen Miete, Rang
+          und eine Beispielrechnung zur Kappungsgrenze.</p>
+      </div>
+      <div id="calc"></div>
+    </div>
+  </aside>
 
   <footer class="panel">
     <p>Mietdaten: <a href="https://ergebnisse.zensus2022.de">Zensus 2022</a>, Tabelle 4000W-0004, © Statistische Ämter des Bundes und der Länder, Deutschland, 2026, Lizenz <a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>.</p>
@@ -302,8 +332,7 @@ function init(summary, kreise, laender) {
     map.addLayer({ id: "kreise-fill", type: "fill", source: "kreise", paint: { "fill-color": step } });
     if (scenarioView) scenarioView.onChange(id => {
       map.setPaintProperty("kreise-fill", "fill-color", id === "miete" ? step : scenarioView.colors(id));
-      const current = selected !== null ? selected : hovered;
-      if (current !== null) showDetail(kreise.features[current].properties, summary, current === selected);
+      if (selected !== null) showCalc(kreise.features[selected].properties, summary);
     });
     map.addLayer({ id: "kreise-line", type: "line", source: "kreise",
       paint: { "line-color": css("--kreis-line"), "line-width": 0.4 } });
@@ -317,29 +346,37 @@ function init(summary, kreise, laender) {
   let hovered = null, selected = null;
   const setActive = (id, on) => id !== null && map.setFeatureState({ source: "kreise", id }, { active: on });
 
+  // hover: a small label next to the cursor (not on touch screens, where a tap selects)
+  const tip = new maplibregl.Popup({ closeButton: false, closeOnClick: false, className: "hover-tip",
+                                      offset: 14, anchor: "left", maxWidth: "260px" });
+  const touch = matchMedia("(pointer: coarse)").matches;
+
   map.on("mousemove", "kreise-fill", e => {
     map.getCanvas().style.cursor = "pointer";
     const f = e.features[0];
-    if (hovered === f.id) return;     // same Kreis: nothing to redraw
+    if (!touch) tip.setLngLat(e.lngLat);
+    if (hovered === f.id) return;     // same Kreis: only the label moves
     if (hovered !== selected) setActive(hovered, false);
     hovered = f.id;
     setActive(f.id, true);
-    showDetail(f.properties, summary, f.id === selected);   // scenarios only for the selected Kreis
+    if (!touch) tip.setHTML(tipHTML(f.properties)).addTo(map);
   });
   map.on("mouseleave", "kreise-fill", () => {
     map.getCanvas().style.cursor = "";
     if (hovered !== selected) setActive(hovered, false);
     hovered = null;
-    if (selected !== null) showDetail(kreise.features[selected].properties, summary, true);
+    tip.remove();
   });
   map.on("click", "kreise-fill", e => select(e.features[0].id, false));
 
   function select(id, fly) {
-    setActive(selected, false);
+    tip.remove();
+    if (selected !== hovered) setActive(selected, false);
     selected = id;
     setActive(id, true);
     const f = kreise.features[id];
-    showDetail(f.properties, summary, true);
+    showDetail(f.properties, summary);
+    showCalc(f.properties, summary);
     if (fly) map.fitBounds(bbox(f.geometry), { padding: 60, maxZoom: 9, duration: 600 });
   }
 
@@ -460,11 +497,17 @@ function setupScenarioView(kreise) {
   };
 }
 
-// withScenarios: the example-model block is shown only for a selected Kreis (click or search),
-// not while the cursor just moves across the map
-// info bubble: the panel is re-rendered often, so listen on the container and on the document
+// hover label: rent in the rent view, the modelled change in a scenario view
+function tipHTML(p) {
+  if (view === "miete") return `<strong>${p.name}</strong><br>${fmt.format(p.miete)}&nbsp;€/m²`;
+  const d = p[`diff_${view}`];
+  const change = d === 0 ? "unverändert" : `${d > 0 ? "+" : "−"}${fmtEur.format(Math.abs(d))}&nbsp;€ pro Monat`;
+  return `<strong>${p.name}</strong><br>${change} <small>(Modellrechnung)</small>`;
+}
+
+// info bubble: the calculation is re-rendered on every selection, so listen on its container
 function setBubble(open) {
-  const btn = document.querySelector("#detail .info");
+  const btn = document.querySelector("#calc .info");
   const bubble = document.getElementById("kappung-info");
   if (!btn || !bubble) return;
   btn.setAttribute("aria-expanded", String(open));
@@ -472,7 +515,7 @@ function setBubble(open) {
   // point the arrow at the button (both are positioned within .scenarios)
   if (open) bubble.style.setProperty("--arrow", `${btn.offsetLeft + btn.offsetWidth / 2 - 6}px`);
 }
-document.getElementById("detail").addEventListener("click", e => {
+document.getElementById("calc").addEventListener("click", e => {
   if (e.target.closest(".info")) setBubble(document.getElementById("kappung-info").hidden);
 });
 document.addEventListener("click", e => {
@@ -480,7 +523,7 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") setBubble(false); });
 
-function showDetail(p, summary, withScenarios = false) {
+function showDetail(p, summary) {
   const diff = p.miete - summary.deutschland;
   const rel = Math.abs(diff) < 0.005 ? "genau im Bundesdurchschnitt"
     : `${fmt.format(Math.abs(diff))}&nbsp;€ ${diff > 0 ? "über" : "unter"} dem Bundesdurchschnitt von ${fmt.format(summary.deutschland)}&nbsp;€`;
@@ -488,8 +531,14 @@ function showDetail(p, summary, withScenarios = false) {
     <h2>${p.name}</h2>
     <div class="typ">${p.BEZ}</div>
     <div class="value">${fmt.format(p.miete)} <small>€/m²</small></div>
-    <p class="compare">${rel}<br>Rang ${p.rang} von ${summary.anzahl_kreise} (1 = teuerster Kreis)</p>
-    ${withScenarios ? scenarioBlock(p, summary) : ""}`;
+    <p class="compare">${rel}<br>Rang ${p.rang} von ${summary.anzahl_kreise} (1 = teuerster Kreis)</p>`;
+}
+
+// right column: the example calculation for the selected Kreis
+function showCalc(p, summary) {
+  document.getElementById("calc").innerHTML = scenarioBlock(p, summary) ||
+    `<h2>Beispielrechnung: Kappungsgrenze</h2>
+     <p class="hint">Für diesen Kreis liegt keine Beispielrechnung vor.</p>`;
 }
 
 // Kappungsgrenze scenarios for one Kreis, from data/szenarien.json (computed by run_model.py)
@@ -519,8 +568,8 @@ function scenarioBlock(p, summary) {
       <td>${fmtEur.format(month)}&nbsp;€</td><td class="diff">${diff}</td></tr>`;
   }).join("");
   return `<div class="scenarios">
-    <h3>Beispielrechnung: Kappungsgrenze<button type="button" class="info" aria-expanded="false"
-      aria-controls="kappung-info" aria-label="Was ist die Kappungsgrenze?">?</button></h3>
+    <h2>Beispielrechnung: Kappungsgrenze<button type="button" class="info" aria-expanded="false"
+      aria-controls="kappung-info" aria-label="Was ist die Kappungsgrenze?">?</button></h2>
     <div class="bubble" id="kappung-info" role="note" hidden>
       <p>In bestehenden Mietverträgen darf die Miete in drei Jahren um höchstens ${pct(par.kappung_allgemein)}
         steigen, in Gebieten mit angespanntem Wohnungsmarkt um höchstens ${pct(par.kappung_angespannt)}
