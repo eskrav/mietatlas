@@ -23,7 +23,7 @@ Wichtig für die Interpretation: Es handelt sich um **Bestandsmieten** aller ver
 
 `fetch_vg250.py` lädt das VG250-Archiv (Stand 31.12.2022) vom BKG, entnimmt nur die Kreisebene und ersetzt die Dateien in `data/raw/vg250/` ebenfalls erst, wenn sie die Prüfungen aus `pipeline.py` bestehen. Ein Konto ist dafür nicht nötig.
 
-`load_db.py` lädt die geprüfte Zensus-Tabelle in eine PostgreSQL-Datenbank (siehe unten). `pipeline.py` liest die Mietwerte aus der Datenbank und die Kreisgrenzen aus `data/raw/vg250/`, prüft beide, verknüpft sie über den Amtlichen Gemeindeschlüssel (AGS) und schreibt die Daten für die Karte nach `docs/data/`. Jede Prüfung bricht den Build mit einer klaren Fehlermeldung ab:
+`load_db.py` lädt die geprüfte Zensus-Tabelle in eine PostgreSQL-Datenbank (siehe unten). `pipeline.py` liest die Mietwerte aus der Datenbank und die Kreisgrenzen aus `data/raw/vg250/`, prüft beide, verknüpft sie über den Amtlichen Gemeindeschlüssel (AGS) und schreibt die Daten für die Karte nach `docs/data/`. `run_model.py` berechnet das Beispielmodell (siehe unten); `pipeline.py` exportiert dessen veröffentlichte Szenarien zusätzlich nach `docs/data/szenarien.json`. Jede Prüfung bricht den Build mit einer klaren Fehlermeldung ab:
 
 - genau 400 Kreise, eindeutige 5-stellige AGS in beiden Quellen (als Text, damit führende Nullen erhalten bleiben)
 - nur bekannte Qualitätskennzeichen, Werte in einem plausiblen Bereich
@@ -32,7 +32,7 @@ Wichtig für die Interpretation: Es handelt sich um **Bestandsmieten** aller ver
 
 Die Grenzen werden mit Coverage-Simplification vereinfacht, damit benachbarte Kreise exakt gemeinsame Grenzen behalten (keine Lücken oder Überlappungen).
 
-Bei jedem Push auf `main` startet ein GitHub-Actions-Workflow eine temporäre PostgreSQL-Datenbank, lädt die eingecheckten Rohdaten hinein, führt die Pipeline samt Prüfungen aus und veröffentlicht die Karte nur, wenn alle Prüfungen bestehen. Die Datenbank existiert nur während des Laufs.
+Bei jedem Push auf `main` startet ein GitHub-Actions-Workflow eine temporäre PostgreSQL-Datenbank, lädt die eingecheckten Rohdaten hinein, berechnet das Beispielmodell, führt die Pipeline samt Prüfungen aus und veröffentlicht die Karte nur, wenn alle Prüfungen bestehen. Die Datenbank existiert nur während des Laufs.
 
 ## Datenbank
 
@@ -88,14 +88,16 @@ Annahmen, als Parameter mit Art `assumption` gespeichert und damit änderbar und
 
 Das Ergebnis ist eine **Obergrenze, keine Prognose**: Das Modell nimmt an, dass jede Miete so weit steigt, wie Marktentwicklung und Kappungsgrenze es zulassen. Ein früherer Lauf mit 5 % Marktwachstum zeigt, wie geänderte Annahmen nachvollziehbar bleiben; ein unveröffentlichter Entwurf mit engerer Abgrenzung angespannter Märkte zeigt, dass nur freigegebene Szenarien in `published_results` erscheinen.
 
+`run_model.py` legt die Modelltabellen an und berechnet das Modell. `pipeline.py` schreibt anschließend die veröffentlichten Szenarien nach `docs/data/szenarien.json`: je Kreis und Szenario die Miete je m² und die Monatsmiete der Musterwohnung, dazu je Szenario Modellversion, Datenstand und die verwendeten Parameterwerte. Fehlt für einen Kreis der Karte ein Szenariowert, bricht der Build ab.
+
 ```bash
-psql -d mietatlas -f db/model_kappung.sql
+python run_model.py
 psql -d mietatlas -f db/model_queries.sql
 ```
 
 ## Tests
 
-`tests/` enthält Tests für den Parser (an kleinen Beispieltabellen im Format der Zensus-API), für die Prüfungen, die Farbklassen, die Datenbank, die Modelltabellen und die Abfragen in `db/queries.sql` und `db/model_queries.sql`: Wiederholtes Laden ergibt denselben Stand, ein fehlgeschlagener Ladevorgang ändert nichts, und die Datenbank liefert genau die Werte der Rohdatei. Die Datenbanktests laufen gegen eine eigene Testdatenbank und werden übersprungen, wenn keine erreichbar ist. Im GitHub-Workflow laufen alle Tests vor jedem Build.
+`tests/` enthält Tests für den Parser (an kleinen Beispieltabellen im Format der Zensus-API), für die Prüfungen, die Farbklassen, die Datenbank, die Modelltabellen, den Export der Szenarien und die Abfragen in `db/queries.sql` und `db/model_queries.sql`: Wiederholtes Laden ergibt denselben Stand, ein fehlgeschlagener Ladevorgang ändert nichts, und die Datenbank liefert genau die Werte der Rohdatei. Die Datenbanktests laufen gegen eine eigene Testdatenbank und werden übersprungen, wenn keine erreichbar ist. Im GitHub-Workflow laufen alle Tests vor jedem Build.
 
 ```bash
 createdb mietatlas_test   # einmalig, für die Datenbanktests
@@ -113,6 +115,7 @@ pip install -r requirements.txt
 python fetch_zensus.py              # optional: Zensus-Tabelle neu abrufen (siehe unten)
 python fetch_vg250.py               # optional: Kreisgrenzen neu abrufen
 python load_db.py                   # Rohdaten in PostgreSQL laden (siehe unten)
+python run_model.py                 # Beispielmodell berechnen
 python pipeline.py
 cd docs && python -m http.server   # dann http://localhost:8000
 ```
@@ -124,7 +127,7 @@ export ZENSUS_API_TOKEN=...
 python fetch_zensus.py
 ```
 
-Für `load_db.py` und `pipeline.py` braucht es eine laufende PostgreSQL-Datenbank (getestet mit Version 16). Die Verbindung kommt aus der Umgebungsvariable `DATABASE_URL`; ohne sie wird `postgresql:///mietatlas` verwendet. Einmalig anlegen:
+Für `load_db.py`, `run_model.py` und `pipeline.py` braucht es eine laufende PostgreSQL-Datenbank (getestet mit Version 16). Die Verbindung kommt aus der Umgebungsvariable `DATABASE_URL`; ohne sie wird `postgresql:///mietatlas` verwendet. Einmalig anlegen:
 
 ```bash
 createdb mietatlas

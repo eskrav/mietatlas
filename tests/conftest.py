@@ -21,3 +21,14 @@ def db():
             pytest.fail(f"test database not reachable: {e}")
         pytest.skip(f"no test database at {URL} (createdb mietatlas_test to run these)")
     return URL
+
+
+@pytest.fixture(scope="module")
+def model_db(db):
+    """Test database with the real data loaded and the example model computed."""
+    import load_db
+    import run_model
+
+    load_db.main(db)
+    run_model.main(db)
+    return db

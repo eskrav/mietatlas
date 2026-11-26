@@ -1,5 +1,6 @@
 # Runs the data pipeline (including all checks) on every push and publishes the map:
-# raw files -> load_db.py -> PostgreSQL (temporary, only for this run) -> pipeline.py -> docs/.
+# raw files -> load_db.py -> PostgreSQL (temporary, only for this run) -> run_model.py
+# -> pipeline.py -> docs/ (map data and scenario export).
 # If any check fails, nothing is deployed and the live map stays as it is.
 name: Build data and deploy map
 
@@ -47,6 +48,8 @@ jobs:
         run: pytest -q
       - name: Load raw data into PostgreSQL (with checks)
         run: python load_db.py
+      - name: Compute the example model
+        run: python run_model.py
       - name: Run pipeline and data checks
         run: python pipeline.py
       - uses: actions/upload-pages-artifact@v3

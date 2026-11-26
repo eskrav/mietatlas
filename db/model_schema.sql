@@ -100,22 +100,22 @@ CREATE TABLE IF NOT EXISTS atlas.results (
     PRIMARY KEY (run_id, region_id, household_type_id, indicator_id, year)
 );
 
--- What an interface would read: the latest run of each published scenario,
--- without internal run IDs
+-- The run that counts for each published scenario: its latest one
+CREATE OR REPLACE VIEW atlas.published_runs AS
+SELECT DISTINCT ON (r.scenario_id)
+       r.scenario_id, r.run_id, r.model_version, r.data_release, r.run_at
+FROM atlas.model_runs r
+JOIN atlas.scenarios s USING (scenario_id)
+WHERE s.is_published
+ORDER BY r.scenario_id, r.run_at DESC, r.run_id DESC;  -- run_id breaks ties
+
+-- What an interface would read: the results of those runs, without internal run IDs
 CREATE OR REPLACE VIEW atlas.published_results AS
-WITH latest_runs AS (
-    SELECT DISTINCT ON (r.scenario_id)
-           r.run_id, r.scenario_id
-    FROM atlas.model_runs r
-    JOIN atlas.scenarios s USING (scenario_id)
-    WHERE s.is_published
-    ORDER BY r.scenario_id, r.run_at DESC, r.run_id DESC  -- run_id breaks ties
-)
-SELECT lr.scenario_id,
+SELECT pr.scenario_id,
        res.region_id,
        res.household_type_id,
        res.indicator_id,
        res.year,
        res.value
-FROM latest_runs lr
+FROM atlas.published_runs pr
 JOIN atlas.results res USING (run_id);

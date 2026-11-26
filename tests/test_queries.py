@@ -9,7 +9,6 @@ from pathlib import Path
 import psycopg
 import pytest
 
-import load_db
 
 DB_DIR = Path(__file__).parent.parent / "db"
 QUERY_FILES = ["queries.sql", "model_queries.sql"]
@@ -25,13 +24,8 @@ ALL_QUERIES = [(f, name) for f in QUERY_FILES for name in named_queries(f)]
 
 
 @pytest.fixture(scope="module")
-def loaded(db):
-    """Real data via load_db.py, plus the Kappungsgrenze model computed on it."""
-    load_db.main(db)
-    with psycopg.connect(db) as conn:
-        conn.execute((DB_DIR / "model_schema.sql").read_text())
-        conn.execute((DB_DIR / "model_kappung.sql").read_text())
-    return db
+def loaded(model_db):
+    return model_db
 
 
 def run(url: str, filename: str, name: str) -> list:

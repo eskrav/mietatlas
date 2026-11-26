@@ -3,7 +3,8 @@
 Steps: read the Zensus 2022 rents from the PostgreSQL database (filled from data/raw/
 by load_db.py) and the BKG VG250 Kreis boundaries from data/raw/, validate both,
 join them on the 5-digit Amtlicher Gemeindeschluessel (AGS),
-simplify the boundaries for the web, and write a GeoJSON for the map.
+simplify the boundaries for the web, and write a GeoJSON for the map. Also export
+the published scenarios of the example model (computed by run_model.py).
 Every check raises an error, so a broken input stops the build.
 """
 import csv
@@ -133,6 +134,63 @@ def load_rents_from_db(url: str = DATABASE_URL) -> tuple[dict, float]:
     return rents, float(row[0])
 
 
+SCENARIO_INDICATORS = ("nettokaltmiete_szenario", "monatsmiete_musterwohnung")
+
+
+def load_scenarios_from_db(url: str = DATABASE_URL) -> dict:
+    """Published scenarios of the example model, with what each run used, and the values
+    per Kreis: {"szenarien": [...], "werte": {AGS: {scenario_id: [EUR/m2, EUR/month]}}}."""
+    with psycopg.connect(url) as conn:
+        try:
+            runs = conn.execute(
+                """SELECT s.scenario_id, s.name, s.description, s.is_baseline,
+                          pr.run_id, pr.model_version, pr.data_release
+                   FROM atlas.published_runs pr
+                   JOIN atlas.scenarios s USING (scenario_id)
+                   ORDER BY s.is_baseline DESC, s.scenario_id"""
+            ).fetchall()
+        except psycopg.errors.UndefinedTable:
+            sys.exit("Database has no model tables yet; run run_model.py before pipeline.py.")
+        params = {}
+        for run_id, parameter_id, value in conn.execute(
+            """SELECT run_id, parameter_id, value FROM atlas.run_parameters
+               WHERE run_id = ANY(%s) ORDER BY run_id, parameter_id""",
+            ([r[4] for r in runs],),
+        ):
+            params.setdefault(run_id, {})[parameter_id] = float(value)
+        values = {}
+        for scenario_id, ags, indicator_id, value in conn.execute(
+            """SELECT p.scenario_id, p.region_id, p.indicator_id, p.value
+               FROM atlas.published_results p
+               JOIN atlas.regions r USING (region_id)
+               WHERE r.level = 'kreis' AND p.indicator_id = ANY(%s)
+               ORDER BY p.region_id, p.scenario_id, p.indicator_id""",
+            (list(SCENARIO_INDICATORS),),
+        ):
+            pair = values.setdefault(ags, {}).setdefault(scenario_id, [None, None])
+            pair[SCENARIO_INDICATORS.index(indicator_id)] = float(value)
+    scenarios = [
+        {"id": sid, "name": name, "beschreibung": desc, "basis": base,
+         "modellversion": version, "datenstand": release, "parameter": params.get(run_id, {})}
+        for sid, name, desc, base, run_id, version, release in runs
+    ]
+    return {"szenarien": scenarios, "werte": values}
+
+
+def validate_scenarios(export: dict, rents: dict) -> None:
+    """Every Kreis on the map needs both values for every published scenario."""
+    ids = [s["id"] for s in export["szenarien"]]
+    check(ids, "no published scenarios in the database")
+    check(sum(s["basis"] for s in export["szenarien"]) == 1, "expected exactly one baseline scenario")
+    check(set(export["werte"]) == set(rents),
+          f"scenario values for {len(export['werte'])} Kreise, expected {len(rents)}")
+    gaps = [(a, sid) for a, row in export["werte"].items() for sid in ids
+            if sid not in row or None in row[sid]]
+    check(not gaps, f"missing scenario values: {gaps[:5]}")
+    bad = [a for a, row in export["werte"].items() for v in row.values() if min(v) <= 0]
+    check(not bad, f"non-positive scenario values: {bad[:5]}")
+
+
 def load_kreise(path: Path) -> gpd.GeoDataFrame:
     gdf = gpd.read_file(path)
     # GF 4 = land areas; GF 2 = water areas (e.g. coastal waters, Bodensee)
@@ -207,9 +265,15 @@ def main() -> None:
         "kreise_je_klasse": counts,
     }
     (OUT / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2))
+
+    scenarios = load_scenarios_from_db()
+    validate_scenarios(scenarios, rents)
+    (OUT / "szenarien.json").write_text(
+        json.dumps(scenarios, ensure_ascii=False, separators=(",", ":")))
     size_kb = (OUT / "kreise_mieten.geojson").stat().st_size // 1024
     print(f"OK: {len(gdf)} Kreise written ({size_kb} KB). "
-          f"Range {values[0]}-{values[-1]} EUR/m2, median {summary['median']}.")
+          f"Range {values[0]}-{values[-1]} EUR/m2, median {summary['median']}. "
+          f"{len(scenarios['szenarien'])} scenarios exported.")
 
 
 if __name__ == "__main__":
