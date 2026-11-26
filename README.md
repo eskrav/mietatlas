@@ -94,7 +94,7 @@ Annahmen, als Parameter mit Art `assumption` gespeichert und damit änderbar und
 
 Das Hauptergebnis ist eine **Obergrenze für ein Beispiel-Mietverhältnis, keine Prognose**: Es zeigt, wie viel die Miete höchstens steigen darf, nicht, wie viel sie tatsächlich steigt. Ein früherer Lauf mit 15 % Abstand zur Vergleichsmiete zeigt, wie geänderte Annahmen nachvollziehbar bleiben; ein unveröffentlichter Entwurf mit engerer Abgrenzung angespannter Märkte zeigt, dass nur freigegebene Szenarien in `published_results` erscheinen.
 
-`run_model.py` legt die Modelltabellen an und berechnet das Modell. `pipeline.py` schreibt anschließend die veröffentlichten Szenarien nach `docs/data/szenarien.json`: je Kreis und Szenario die höchstmögliche Miete je m² und pro Monat sowie die Monatsmiete bei durchschnittlicher Entwicklung, dazu je Szenario Modellversion, Datenstand und die verwendeten Parameterwerte. Fehlt für einen Kreis der Karte ein Szenariowert, bricht der Build ab.
+`run_model.py` legt die Modelltabellen an und berechnet das Modell. `pipeline.py` schreibt anschließend die veröffentlichten Szenarien nach `docs/data/szenarien.json`: je Kreis und Szenario die höchstmögliche Miete je m² und pro Monat die Monatsmiete bei durchschnittlicher Entwicklung sowie die Einstufung des Kreises (angespannt oder nicht), die angewendete Kappungsgrenze und den höchstmöglichen Anstieg, dazu je Szenario Modellversion, Datenstand und die verwendeten Parameterwerte. Fehlt für einen Kreis der Karte ein Szenariowert, bricht der Build ab. Die Karte zeigt diese Werte nur an; sie rechnet nichts davon selbst nach, die Modelllogik liegt allein in der Datenbank.
 
 ```bash
 python run_model.py

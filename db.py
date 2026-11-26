@@ -40,9 +40,12 @@ def load_rents_from_db(url: str = DATABASE_URL) -> tuple[dict, float]:
     return rents, float(row[0])
 
 
-# per Kreis and scenario: [highest rent EUR/m2, highest rent EUR/month, EUR/month at average growth]
+# per Kreis and scenario, in this order: highest rent EUR/m2, highest rent EUR/month,
+# EUR/month at average growth, tight market (1/0), applied cap, highest possible increase
 SCENARIO_INDICATORS = ("nettokaltmiete_szenario", "monatsmiete_musterwohnung",
-                       "monatsmiete_durchschnitt")
+                       "monatsmiete_durchschnitt", "markt_angespannt",
+                       "kappungsgrenze_angewendet", "anstieg_hoechstens")
+N_RENT_VALUES = 3  # the first three are rents and must be positive
 
 
 def load_scenarios_from_db(url: str = DATABASE_URL) -> dict:

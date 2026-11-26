@@ -554,10 +554,11 @@ function scenarioBlock(p, summary) {
   if (!row || !base) return "";
   const par = base.parameter;
   const baseMonth = row[base.id][1];
-  const tight = p.miete >= par.schwelle_angespannt * summary.deutschland;
-  const cap = tight ? par.kappung_angespannt : par.kappung_allgemein;   // under current law
+  // how the model treated this Kreis under current law: read from its results, not re-derived here
+  const [, , , tightFlag, cap, increase] = row[base.id];
+  const tight = tightFlag === 1;
   const kreisLine = `Der Kreis gilt im Modell ${tight ? "als" : "nicht als"} angespannter Markt (Näherung, nicht die
-    tatsächliche Verordnungslage), die Kappungsgrenze liegt hier bei ${pct(cap)}` + (par.rueckstand > cap
+    tatsächliche Verordnungslage), die Kappungsgrenze liegt hier bei ${pct(cap)}` + (increase < par.rueckstand
       ? ` und bremst den Anstieg: Bis zur Vergleichsmiete wären es ${pct(par.rueckstand)}.`
       : `; sie bremst den Anstieg hier nicht.`);
   const rows = scenarios.szenarien.map(s => {
@@ -585,7 +586,7 @@ function scenarioBlock(p, summary) {
       <thead><tr><th scope="col">Szenario</th><td>höchstens</td><td></td></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <p class="note">Rechnung für geltendes Recht: ${fmt.format(p.miete)}&nbsp;€/m² × ${fmt.format(1 + Math.min(par.rueckstand, cap))}
+    <p class="note">Rechnung für geltendes Recht: ${fmt.format(p.miete)}&nbsp;€/m² × ${fmt.format(1 + increase)}
       = ${fmt.format(row[base.id][0])}&nbsp;€/m², mal ${fmtEur.format(par.wohnflaeche)}&nbsp;m² = ${fmtEur.format(baseMonth)}&nbsp;€.</p>
     <p class="note">Bei durchschnittlicher Mietentwicklung (+${pct1(par.mietindex_anstieg)} pro Jahr, Nettokaltmieten
       im Verbraucherpreisindex des Statistischen Bundesamts) läge die Miete bei etwa

@@ -18,7 +18,7 @@ import geopandas as gpd
 import shapely
 
 from checks import check
-from db import load_rents_from_db, load_scenarios_from_db
+from db import N_RENT_VALUES, load_rents_from_db, load_scenarios_from_db
 from zensus import EXPECTED_KREISE, RAW, STICHTAG, validate_values
 
 OUT = Path("docs/data")  # GitHub Pages serves the docs/ folder
@@ -33,7 +33,7 @@ TRIM_PERCENTILES = (2, 98)
 
 
 def validate_scenarios(export: dict, rents: dict) -> None:
-    """Every Kreis on the map needs both values for every published scenario."""
+    """Every Kreis on the map needs every value for every published scenario."""
     ids = [s["id"] for s in export["szenarien"]]
     check(ids, "no published scenarios in the database")
     check(sum(s["basis"] for s in export["szenarien"]) == 1, "expected exactly one baseline scenario")
@@ -42,8 +42,9 @@ def validate_scenarios(export: dict, rents: dict) -> None:
     gaps = [(a, sid) for a, row in export["werte"].items() for sid in ids
             if sid not in row or None in row[sid]]
     check(not gaps, f"missing scenario values: {gaps[:5]}")
-    bad = [a for a, row in export["werte"].items() for v in row.values() if min(v) <= 0]
-    check(not bad, f"non-positive scenario values: {bad[:5]}")
+    bad = [a for a, row in export["werte"].items() for v in row.values()
+           if min(v[:N_RENT_VALUES]) <= 0]
+    check(not bad, f"non-positive scenario rents: {bad[:5]}")
 
 
 def load_kreise(path: Path) -> gpd.GeoDataFrame:

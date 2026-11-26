@@ -40,7 +40,13 @@ INSERT INTO atlas.indicators (indicator_id, name, unit, description) VALUES
   ('monatsmiete_musterwohnung', 'Monatliche Nettokaltmiete der Musterwohnung', 'EUR/Monat',
    'Modellergebnis: Nettokaltmiete nach Ablauf des Szenarios × Wohnfläche der Musterwohnung'),
   ('monatsmiete_durchschnitt', 'Monatliche Nettokaltmiete der Musterwohnung bei durchschnittlicher Mietentwicklung', 'EUR/Monat',
-   'Modellergebnis: Miete heute × (1 + Mietindex-Anstieg)^Jahre, höchstens bis zur Kappungsgrenze, × Wohnfläche')
+   'Modellergebnis: Miete heute × (1 + Mietindex-Anstieg)^Jahre, höchstens bis zur Kappungsgrenze, × Wohnfläche'),
+  ('markt_angespannt', 'Kreis gilt im Modell als angespannter Markt', '1 = ja, 0 = nein',
+   'Modellergebnis: Einstufung des Kreises nach dem Parameter schwelle_angespannt'),
+  ('kappungsgrenze_angewendet', 'Im Kreis angewendete Kappungsgrenze', 'Anteil in 3 Jahren',
+   'Modellergebnis: kappung_angespannt oder kappung_allgemein, je nach Einstufung des Kreises'),
+  ('anstieg_hoechstens', 'Höchstmöglicher Mietanstieg des Beispiel-Mietverhältnisses', 'Anteil in 3 Jahren',
+   'Modellergebnis: der kleinere Wert aus Abstand zur Vergleichsmiete und angewendeter Kappungsgrenze')
 ON CONFLICT (indicator_id) DO UPDATE
 SET name = EXCLUDED.name, unit = EXCLUDED.unit, description = EXCLUDED.description;
 
@@ -113,9 +119,10 @@ BEGIN
         SELECT o.region_id,
                o.year,
                o.value,
-               1 + CASE WHEN o.value >= p.schwelle * bund.value
-                        THEN p.kappung_angespannt
-                        ELSE p.kappung_allgemein END AS kappung_faktor,
+               (o.value >= p.schwelle * bund.value) AS angespannt,
+               CASE WHEN o.value >= p.schwelle * bund.value
+                    THEN p.kappung_angespannt
+                    ELSE p.kappung_allgemein END AS kappung,
                p.rueckstand,
                p.mietindex_anstieg,
                p.wohnflaeche,
@@ -130,11 +137,12 @@ BEGIN
     )
     ,
     berechnet AS (
-        SELECT region_id, year, horizont, wohnflaeche,
+        SELECT region_id, year, horizont, wohnflaeche, angespannt, kappung,
+               least(rueckstand, kappung)                              AS anstieg,
                -- highest rent for a tenancy that lies rueckstand below the comparison rent
-               round(value * least(1 + rueckstand, kappung_faktor), 2) AS miete_hoechstens,
+               round(value * (1 + least(rueckstand, kappung)), 2)      AS miete_hoechstens,
                -- rent under average growth, also limited by the cap
-               round(value * least(power(1 + mietindex_anstieg, horizont), kappung_faktor), 2)
+               round(value * least(power(1 + mietindex_anstieg, horizont), 1 + kappung), 2)
                                                                        AS miete_durchschnitt
         FROM kreise
     )
@@ -149,6 +157,20 @@ BEGIN
     UNION ALL
     SELECT v_run_id, region_id, 'musterhaushalt', 'monatsmiete_durchschnitt',
            year + horizont::integer, round(miete_durchschnitt * wohnflaeche, 0)
+    FROM berechnet
+    -- How each Kreis was treated, stored with the results so that neither the website
+    -- nor a later reader has to re-derive it from the parameters
+    UNION ALL
+    SELECT v_run_id, region_id, 'musterhaushalt', 'markt_angespannt',
+           year + horizont::integer, angespannt::integer
+    FROM berechnet
+    UNION ALL
+    SELECT v_run_id, region_id, 'musterhaushalt', 'kappungsgrenze_angewendet',
+           year + horizont::integer, kappung
+    FROM berechnet
+    UNION ALL
+    SELECT v_run_id, region_id, 'musterhaushalt', 'anstieg_hoechstens',
+           year + horizont::integer, anstieg
     FROM berechnet;
 
     RETURN v_run_id;

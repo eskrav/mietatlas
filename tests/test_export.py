@@ -27,12 +27,19 @@ def test_scenarios_with_baseline_first_and_parameters(export):
 
 
 def test_berlin_values(export):
-    # [highest EUR/m2, highest EUR/month, EUR/month at average growth (same in all scenarios)]
+    # highest EUR/m2, highest EUR/month, EUR/month at average growth (same in all scenarios),
+    # tight market, applied cap, highest possible increase
     assert export["werte"]["11000"] == {
-        "geltendes_recht": [8.82, 617.0, 571.0],
-        "kappung_10": [8.44, 591.0, 571.0],
-        "kappung_15_ueberall": [8.82, 617.0, 571.0],
+        "geltendes_recht": [8.82, 617.0, 571.0, 1.0, 0.15, 0.15],
+        "kappung_10": [8.44, 591.0, 571.0, 1.0, 0.10, 0.10],
+        "kappung_15_ueberall": [8.82, 617.0, 571.0, 1.0, 0.15, 0.15],
     }
+
+
+def test_untight_kreis_gets_the_general_cap(export):
+    # Mittelsachsen lies below the national value: 20 % cap, which equals the 20 % gap
+    assert export["werte"]["14522"]["geltendes_recht"][3:] == [0.0, 0.20, 0.20]
+    assert export["werte"]["14522"]["kappung_15_ueberall"][3:] == [0.0, 0.15, 0.15]
 
 
 def test_export_is_deterministic(model_db, export):
