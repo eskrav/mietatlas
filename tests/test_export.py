@@ -21,14 +21,15 @@ def test_scenarios_with_baseline_first_and_parameters(export):
     assert ids == ["geltendes_recht", "kappung_10", "kappung_15_ueberall"]  # no draft
     base = export["szenarien"][0]
     assert base["basis"] and base["modellversion"] == "v0.2.0"
-    assert base["parameter"]["marktwachstum"] == 0.06  # latest run, not the 5 % one
+    assert base["parameter"]["rueckstand"] == 0.20  # latest run, not the earlier 15 % one
 
 
 def test_berlin_values(export):
+    # [highest EUR/m2, highest EUR/month, EUR/month at average growth (same in all scenarios)]
     assert export["werte"]["11000"] == {
-        "geltendes_recht": [8.82, 617.0],
-        "kappung_10": [8.44, 591.0],
-        "kappung_15_ueberall": [8.82, 617.0],
+        "geltendes_recht": [8.82, 617.0, 571.0],
+        "kappung_10": [8.44, 591.0, 571.0],
+        "kappung_15_ueberall": [8.82, 617.0, 571.0],
     }
 
 

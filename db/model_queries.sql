@@ -140,12 +140,10 @@ GROUP BY r.run_id
 HAVING count(rp.parameter_id) <> (SELECT count(*) FROM parameters);
 
 -- name: check_results_outside_bounds
--- A scenario rent must lie between today's rent and today's rent grown at the run's
--- market growth without any cap (expected: no rows; 0.01 tolerance for rounding)
+-- A scenario rent must lie between today's rent and today's rent plus the full gap to the
+-- comparison rent (expected: no rows; 0.01 tolerance for rounding)
 WITH p AS (
-    SELECT run_id,
-           max(value) FILTER (WHERE parameter_id = 'marktwachstum') AS marktwachstum,
-           max(value) FILTER (WHERE parameter_id = 'horizont')      AS horizont
+    SELECT run_id, max(value) FILTER (WHERE parameter_id = 'rueckstand') AS rueckstand
     FROM run_parameters
     GROUP BY run_id
 )
@@ -157,5 +155,13 @@ JOIN observations o
  AND o.indicator_id = 'nettokaltmiete'
  AND o.year = 2022
 WHERE res.indicator_id = 'nettokaltmiete_szenario'
-  AND (res.value < o.value - 0.01
-       OR res.value > o.value * power(1 + p.marktwachstum, p.horizont) + 0.01);
+  AND (res.value < o.value - 0.01 OR res.value > o.value * (1 + p.rueckstand) + 0.01);
+
+-- name: check_average_differs_between_scenarios
+-- Under average rent growth the cap should not bind, so that value must be the same in every
+-- published scenario (expected: no rows; a row here means the cap binds at average growth)
+SELECT region_id, min(value) AS min_wert, max(value) AS max_wert
+FROM published_results
+WHERE indicator_id = 'monatsmiete_durchschnitt'
+GROUP BY region_id
+HAVING min(value) <> max(value);

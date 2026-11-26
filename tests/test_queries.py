@@ -72,12 +72,12 @@ def test_berlin_lookup(loaded):
 
 
 def test_published_baseline_uses_latest_run(loaded):
-    # A Kreis below the national value: the cap does not bind, so the market growth
-    # assumption shows. Run 1 used 5 % (410 EUR), the published run 2 uses 6 % (421 EUR).
+    # A Kreis below the national value: the 20 % cap does not cut below the gap, so the gap
+    # assumption shows. Run 1 used a 15 % gap (407 EUR), the published run 2 uses 20 % (424 EUR).
     value = scalar(loaded, """SELECT value FROM atlas.published_results
                               WHERE scenario_id = 'geltendes_recht' AND region_id = '14522'
                                 AND indicator_id = 'monatsmiete_musterwohnung'""")
-    assert int(value) == 421
+    assert int(value) == 424
 
 
 def test_unpublished_scenario_is_hidden(loaded):
@@ -96,4 +96,4 @@ def test_model_run_is_repeatable(loaded):
     with psycopg.connect(loaded) as conn:
         conn.execute((DB_DIR / "model_kappung.sql").read_text())
     n = scalar(loaded, "SELECT count(*) FROM atlas.results")
-    assert n == 5 * 400 * 2  # runs × Kreise × indicators
+    assert n == 5 * 400 * 3  # runs × Kreise × indicators

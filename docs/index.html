@@ -109,6 +109,27 @@
   .scenarios th { text-align: left; font-weight: 400; padding: 3px 8px 3px 0; }
   .scenarios td { text-align: right; white-space: nowrap; padding: 3px 0 3px 8px; }
   .scenarios td.diff { color: var(--muted); }
+  .scenarios thead th, .scenarios thead td { color: var(--muted); font-size: 0.8rem; padding-bottom: 2px; }
+  /* info button with a bubble that explains the Kappungsgrenze */
+  .scenarios { position: relative; }
+  .scenarios .info {
+    font: inherit; font-size: 0.75rem; font-weight: 700; line-height: 1; width: 1.35rem; height: 1.35rem;
+    margin-left: 6px; padding: 0; border-radius: 50%; border: 1px solid var(--focus);
+    background: transparent; color: var(--focus); cursor: pointer; vertical-align: 1px;
+  }
+  .scenarios .info[aria-expanded="true"] { background: var(--focus); color: var(--panel); }
+  .scenarios .info:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .bubble {
+    position: absolute; z-index: 10; left: 0; right: 0; top: 2.1rem;
+    background: var(--panel); color: var(--ink); border: 1px solid var(--rule); border-radius: 8px;
+    box-shadow: 0 8px 22px rgba(0,0,0,.18); padding: 10px 12px; font-size: 0.85rem;
+  }
+  .bubble::before {   /* small arrow pointing at the button */
+    content: ""; position: absolute; top: -6px; left: var(--arrow, 13rem); width: 10px; height: 10px;
+    background: var(--panel); border-left: 1px solid var(--rule); border-top: 1px solid var(--rule);
+    transform: rotate(45deg);
+  }
+  .scenarios .note + .note { margin-top: 6px; }
   .scenarios tr.base th, .scenarios tr.base td:not(.diff) { font-weight: 500; }
 
   footer { font-size: 0.78rem; color: var(--muted); }
@@ -268,7 +289,10 @@ function init(summary, kreise, laender) {
   map.on("mousemove", "kreise-fill", e => {
     map.getCanvas().style.cursor = "pointer";
     const f = e.features[0];
-    if (hovered !== f.id) { if (hovered !== selected) setActive(hovered, false); hovered = f.id; setActive(f.id, true); }
+    if (hovered === f.id) return;     // same Kreis: nothing to redraw
+    if (hovered !== selected) setActive(hovered, false);
+    hovered = f.id;
+    setActive(f.id, true);
     showDetail(f.properties, summary, f.id === selected);   // scenarios only for the selected Kreis
   });
   map.on("mouseleave", "kreise-fill", () => {
@@ -348,6 +372,24 @@ function init(summary, kreise, laender) {
 
 // withScenarios: the example-model block is shown only for a selected Kreis (click or search),
 // not while the cursor just moves across the map
+// info bubble: the panel is re-rendered often, so listen on the container and on the document
+function setBubble(open) {
+  const btn = document.querySelector("#detail .info");
+  const bubble = document.getElementById("kappung-info");
+  if (!btn || !bubble) return;
+  btn.setAttribute("aria-expanded", String(open));
+  bubble.hidden = !open;
+  // point the arrow at the button (both are positioned within .scenarios)
+  if (open) bubble.style.setProperty("--arrow", `${btn.offsetLeft + btn.offsetWidth / 2 - 6}px`);
+}
+document.getElementById("detail").addEventListener("click", e => {
+  if (e.target.closest(".info")) setBubble(document.getElementById("kappung-info").hidden);
+});
+document.addEventListener("click", e => {
+  if (!e.target.closest(".info") && !e.target.closest(".bubble")) setBubble(false);
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") setBubble(false); });
+
 function showDetail(p, summary, withScenarios = false) {
   const diff = p.miete - summary.deutschland;
   const rel = Math.abs(diff) < 0.005 ? "genau im Bundesdurchschnitt"
@@ -363,6 +405,8 @@ function showDetail(p, summary, withScenarios = false) {
 // Kappungsgrenze scenarios for one Kreis, from data/szenarien.json (computed by run_model.py)
 const fmtEur = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
 const pct = v => `${fmtEur.format(v * 100)}&nbsp;%`;
+const fmt1 = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
+const pct1 = v => `${fmt1.format(v * 100)}&nbsp;%`;
 
 function scenarioBlock(p, summary) {
   const row = scenarios && scenarios.werte[p.AGS];
@@ -371,6 +415,11 @@ function scenarioBlock(p, summary) {
   const par = base.parameter;
   const baseMonth = row[base.id][1];
   const tight = p.miete >= par.schwelle_angespannt * summary.deutschland;
+  const cap = tight ? par.kappung_angespannt : par.kappung_allgemein;   // under current law
+  const kreisLine = `Der Kreis gilt im Modell ${tight ? "als" : "nicht als"} angespannter Markt, die Kappungsgrenze
+    liegt hier bei ${pct(cap)}` + (par.rueckstand > cap
+      ? ` und bremst den Anstieg: Bis zur Vergleichsmiete wären es ${pct(par.rueckstand)}.`
+      : `; sie bremst den Anstieg hier nicht.`);
   const rows = scenarios.szenarien.map(s => {
     const month = row[s.id][1];
     const d = month - baseMonth;
@@ -379,12 +428,26 @@ function scenarioBlock(p, summary) {
       <td>${fmtEur.format(month)}&nbsp;€</td><td class="diff">${diff}</td></tr>`;
   }).join("");
   return `<div class="scenarios">
-    <h3>Beispielrechnung: Kappungsgrenze</h3>
-    <p class="note">Höchstmiete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach ${fmtEur.format(par.horizont)} Jahren,
-      wenn die Vergleichsmiete um ${pct(par.marktwachstum)} pro Jahr steigt. Der Kreis gilt im Modell
-      ${tight ? "als" : "nicht als"} angespannter Markt.</p>
-    <table><tbody>${rows}</tbody></table>
-    <p class="note">Vereinfachtes Beispielmodell, keine Prognose.
+    <h3>Beispielrechnung: Kappungsgrenze<button type="button" class="info" aria-expanded="false"
+      aria-controls="kappung-info" aria-label="Was ist die Kappungsgrenze?">?</button></h3>
+    <div class="bubble" id="kappung-info" role="note" hidden>
+      <p>In bestehenden Mietverträgen darf die Miete in drei Jahren um höchstens ${pct(par.kappung_allgemein)}
+        steigen, in Gebieten mit angespanntem Wohnungsmarkt um höchstens ${pct(par.kappung_angespannt)}
+        (§&nbsp;558 BGB), und nie über die ortsübliche Vergleichsmiete. Das betrifft vor allem
+        Mietverhältnisse, deren Miete deutlich unter der Vergleichsmiete liegt.</p>
+    </div>
+    <p class="note">Höchstmögliche Miete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach
+      ${fmtEur.format(par.horizont)} Jahren, wenn die Miete heute ${pct(par.rueckstand)} unter der
+      Vergleichsmiete liegt. ${kreisLine}</p>
+    <table>
+      <thead><tr><th scope="col">Szenario</th><td>höchstens</td><td></td></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p class="note">Bei durchschnittlicher Mietentwicklung (+${pct1(par.mietindex_anstieg)} pro Jahr laut
+      Mietindex des Statistischen Bundesamts) läge die Miete bei etwa
+      <strong>${fmtEur.format(row[base.id][2])}&nbsp;€</strong>, in allen Szenarien gleich: Bei diesem Tempo greift
+      die Kappungsgrenze nicht.</p>
+    <p class="note">Stark vereinfachtes Demonstrationsmodell, keine Prognose.
       <a href="https://github.com/eskrav/mietatlas#beispiel-kappungsgrenze">Annahmen</a></p>
   </div>`;
 }
