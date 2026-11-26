@@ -269,13 +269,13 @@ function init(summary, kreise, laender) {
     map.getCanvas().style.cursor = "pointer";
     const f = e.features[0];
     if (hovered !== f.id) { if (hovered !== selected) setActive(hovered, false); hovered = f.id; setActive(f.id, true); }
-    showDetail(f.properties, summary);
+    showDetail(f.properties, summary, f.id === selected);   // scenarios only for the selected Kreis
   });
   map.on("mouseleave", "kreise-fill", () => {
     map.getCanvas().style.cursor = "";
     if (hovered !== selected) setActive(hovered, false);
     hovered = null;
-    if (selected !== null) showDetail(kreise.features[selected].properties, summary);
+    if (selected !== null) showDetail(kreise.features[selected].properties, summary, true);
   });
   map.on("click", "kreise-fill", e => select(e.features[0].id, false));
 
@@ -284,7 +284,7 @@ function init(summary, kreise, laender) {
     selected = id;
     setActive(id, true);
     const f = kreise.features[id];
-    showDetail(f.properties, summary);
+    showDetail(f.properties, summary, true);
     if (fly) map.fitBounds(bbox(f.geometry), { padding: 60, maxZoom: 9, duration: 600 });
   }
 
@@ -346,7 +346,9 @@ function init(summary, kreise, laender) {
   });
 }
 
-function showDetail(p, summary) {
+// withScenarios: the example-model block is shown only for a selected Kreis (click or search),
+// not while the cursor just moves across the map
+function showDetail(p, summary, withScenarios = false) {
   const diff = p.miete - summary.deutschland;
   const rel = Math.abs(diff) < 0.005 ? "genau im Bundesdurchschnitt"
     : `${fmt.format(Math.abs(diff))}&nbsp;€ ${diff > 0 ? "über" : "unter"} dem Bundesdurchschnitt von ${fmt.format(summary.deutschland)}&nbsp;€`;
@@ -355,7 +357,7 @@ function showDetail(p, summary) {
     <div class="typ">${p.BEZ}</div>
     <div class="value">${fmt.format(p.miete)} <small>€/m²</small></div>
     <p class="compare">${rel}<br>Rang ${p.rang} von ${summary.anzahl_kreise} (1 = teuerster Kreis)</p>
-    ${scenarioBlock(p, summary)}`;
+    ${withScenarios ? scenarioBlock(p, summary) : ""}`;
 }
 
 // Kappungsgrenze scenarios for one Kreis, from data/szenarien.json (computed by run_model.py)
