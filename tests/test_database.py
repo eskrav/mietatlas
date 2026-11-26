@@ -3,7 +3,8 @@ import psycopg
 import pytest
 
 import load_db
-from pipeline import DEUTSCHLAND, RENT_CSV, load_rents, load_rents_from_db
+from db import load_rents_from_db
+from zensus import DEUTSCHLAND, RENT_CSV, load_rents
 
 
 def counts(url):

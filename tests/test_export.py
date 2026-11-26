@@ -3,8 +3,10 @@ import json
 
 import pytest
 
-from pipeline import (RENT_CSV, DataCheckError, load_rents, load_scenarios_from_db,
-                      validate_scenarios)
+from checks import DataCheckError
+from db import load_scenarios_from_db
+from pipeline import validate_scenarios
+from zensus import RENT_CSV, load_rents
 
 
 @pytest.fixture(scope="module")

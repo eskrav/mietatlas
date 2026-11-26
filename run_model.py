@@ -9,7 +9,7 @@ from pathlib import Path
 
 import psycopg
 
-from pipeline import DATABASE_URL
+from db import DATABASE_URL
 
 DB_DIR = Path(__file__).parent / "db"
 MODEL_FILES = ("model_schema.sql", "model_kappung.sql")

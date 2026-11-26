@@ -18,7 +18,8 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from pipeline import KREISE_SHP, DataCheckError, load_kreise
+from checks import DataCheckError
+from pipeline import KREISE_SHP, load_kreise
 
 URL = os.environ.get(
     "VG250_URL",

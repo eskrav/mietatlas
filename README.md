@@ -19,7 +19,7 @@ Wichtig für die Interpretation: Es handelt sich um **Bestandsmieten** aller ver
 
 ## Pipeline
 
-`fetch_zensus.py` ruft Tabelle 4000W-0004 auf Kreisebene ab, entpackt sie und ersetzt die Datei in `data/raw/` nur, wenn sie dieselben Prüfungen wie `pipeline.py` besteht; sonst bleibt die bisherige Datei unverändert.
+`fetch_zensus.py` ruft Tabelle 4000W-0004 auf Kreisebene ab, entpackt sie und ersetzt die Datei in `data/raw/` nur, wenn sie die Prüfungen in `zensus.py` besteht, die auch beim Laden in die Datenbank gelten; sonst bleibt die bisherige Datei unverändert.
 
 `fetch_vg250.py` lädt das VG250-Archiv (Stand 31.12.2022) vom BKG, entnimmt nur die Kreisebene und ersetzt die Dateien in `data/raw/vg250/` ebenfalls erst, wenn sie die Prüfungen aus `pipeline.py` bestehen. Ein Konto ist dafür nicht nötig.
 
@@ -29,6 +29,8 @@ Wichtig für die Interpretation: Es handelt sich um **Bestandsmieten** aller ver
 - nur bekannte Qualitätskennzeichen, Werte in einem plausiblen Bereich
 - nur Landflächen aus VG250 (GF = 4), keine Wasserflächen
 - vollständiger Abgleich in beiden Richtungen: kein Kreis ohne Geometrie, keine Geometrie ohne Wert
+
+Der Code ist nach Aufgaben getrennt: `zensus.py` (Zensus-Tabelle lesen und prüfen), `db.py` (Lesen aus der Datenbank), `checks.py` (gemeinsame Fehlerklasse für Datenprüfungen) und `pipeline.py` (Geometrien, Karte, Export). Abruf, Laden und Modelllauf kommen dadurch ohne die Geo-Bibliotheken aus.
 
 Die Grenzen werden mit Coverage-Simplification vereinfacht, damit benachbarte Kreise exakt gemeinsame Grenzen behalten (keine Lücken oder Überlappungen).
 

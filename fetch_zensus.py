@@ -21,7 +21,8 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from pipeline import RENT_CSV, DataCheckError, load_rents, validate_rents
+from checks import DataCheckError
+from zensus import RENT_CSV, load_rents, validate_rents
 
 API_BASE = os.environ.get("ZENSUS_API_BASE", "https://ergebnisse.zensus2022.de/api/rest/2020/")
 TABLE = "4000W-0004"

@@ -1,8 +1,8 @@
 """Parser and value checks, on small made-up tables in the layout of the Zensus API."""
 import pytest
 
-from pipeline import (EXPECTED_KREISE, RENT_CSV, DataCheckError, load_rents, validate_rents,
-                      validate_values)
+from checks import DataCheckError
+from zensus import EXPECTED_KREISE, RENT_CSV, load_rents, validate_rents, validate_values
 
 HEADER = """﻿Tabelle: 4000W-0004
 Wohnungskennzahlen: Durchschnittliche Nettokaltmiete;;

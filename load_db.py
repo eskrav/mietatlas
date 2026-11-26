@@ -11,8 +11,9 @@ from pathlib import Path
 
 import psycopg
 
-from pipeline import (DATABASE_URL, DEUTSCHLAND, INDICATOR_ID, RENT_CSV, YEAR, check,
-                      load_rents, validate_rents)
+from checks import check
+from db import DATABASE_URL
+from zensus import DEUTSCHLAND, INDICATOR_ID, RENT_CSV, YEAR, load_rents, validate_rents
 
 SCHEMA_SQL = Path(__file__).parent / "db" / "schema.sql"
 
