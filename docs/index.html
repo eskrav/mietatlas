@@ -75,7 +75,7 @@
   .lede { color: var(--muted); max-width: 34em; }
   .lede strong { color: var(--ink); font-weight: 500; }
 
-  /* legend: the six quantile classes, each with its value range */
+  /* legend: the six colour classes, each with its value range */
   .legend { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }
   .legend span { height: 14px; display: block; }
   /* class boundaries sit under the gaps between swatches */
@@ -146,6 +146,7 @@
     background: var(--panel); color: var(--ink); border: 1px solid var(--rule); border-radius: 8px;
     box-shadow: 0 8px 22px rgba(0,0,0,.18); padding: 10px 12px; font-size: 0.85rem;
   }
+  .bubble p + p { margin-top: 0.5em; }
   .bubble::before {   /* small arrow pointing at the button */
     content: ""; position: absolute; top: -6px; left: var(--arrow, 13rem); width: 10px; height: 10px;
     background: var(--panel); border-left: 1px solid var(--rule); border-top: 1px solid var(--rule);
@@ -194,7 +195,7 @@
 <div class="layout">
   <header class="panel intro">
     <h1>Was kostet Wohnen zur Miete in Ihrem Kreis?</h1>
-    <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte. Es handelt sich um Bestandsmieten aus dem Zensus 2022, nicht um aktuelle Angebotsmieten. Nach Auswahl eines Kreises zeigt eine vereinfachte Beispielrechnung, wie sich die Kappungsgrenze für Mieterhöhungen dort auswirken könnte.</p>
+    <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte. Es handelt sich um Bestandsmieten aus dem Zensus 2022, nicht um aktuelle Angebotsmieten. Dazu eine vereinfachte Beispielrechnung zur Kappungsgrenze für Mieterhöhungen.</p>
     <div id="view-switch" hidden>
       <label for="view">Ansicht</label>
       <select id="view"></select>
@@ -207,7 +208,7 @@
     <div id="legend-scenario" hidden>
       <div class="legend-diff" id="legend-diff"></div>
       <p class="legend-unit" id="legend-diff-unit"></p>
-      <p class="model-note">Modellrechnung mit vereinfachten Annahmen, keine Prognose. Gezeigt wird, wie sich die höchstmögliche Monatsmiete des Beispiel-Mietverhältnisses gegenüber dem geltenden Recht ändert.</p>
+      <p class="model-note">Beispielrechnung mit vereinfachten Annahmen, keine Prognose.</p>
     </div>
   </header>
 
@@ -466,17 +467,17 @@ function setupScenarioView(kreise) {
   const par = base.parameter;
   const select = document.getElementById("view");
   select.innerHTML = `<option value="miete">Nettokaltmiete 2022 (Zensus)</option>
-    <optgroup label="Modellrechnung: Höchstmiete gegenüber geltendem Recht">` +
+    <optgroup label="Beispielrechnung: Höchstmiete gegenüber geltendem Recht">` +
     others.map(s => `<option value="${s.id}">${s.name}</option>`).join("") + `</optgroup>`;
   document.getElementById("view-switch").hidden = false;
   document.getElementById("legend-diff").innerHTML = [
     [css("--neutral"), "unverändert"],
-    [DIFF_COLORS[0], `Höchstmiete um weniger als ${fmtEur.format(width)} € niedriger`],
-    [DIFF_COLORS[1], `um ${fmtEur.format(width)} bis ${fmtEur.format(2 * width)} € niedriger`],
-    [DIFF_COLORS[2], `um mehr als ${fmtEur.format(2 * width)} € niedriger`],
+    [DIFF_COLORS[0], `weniger als ${fmtEur.format(width)} € niedriger`],
+    [DIFF_COLORS[1], `${fmtEur.format(width)} bis ${fmtEur.format(2 * width)} € niedriger`],
+    [DIFF_COLORS[2], `mehr als ${fmtEur.format(2 * width)} € niedriger`],
   ].map(([c, t]) => `<div><span style="background:${c}"></span>${t}</div>`).join("");
   document.getElementById("legend-diff-unit").textContent =
-    `Höchstmögliche Monatsmiete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach ${fmtEur.format(par.horizont)} Jahren`;
+    `Höchstmögliche Monatsmiete (${fmtEur.format(par.wohnflaeche)}-m²-Wohnung, nach ${fmtEur.format(par.horizont)} Jahren) gegenüber geltendem Recht`;
 
   let listener = () => {};
   select.addEventListener("change", () => {
@@ -503,7 +504,7 @@ function tipHTML(p) {
   const d = p[`diff_${view}`];
   const change = d === 0 ? "Höchstmiete unverändert"
     : `Höchstmiete ${d > 0 ? "+" : "−"}${fmtEur.format(Math.abs(d))}&nbsp;€ pro Monat`;
-  return `<strong>${p.name}</strong><br>${change} <small>(Modellrechnung)</small>`;
+  return `<strong>${p.name}</strong><br>${change} <small>(Beispielrechnung)</small>`;
 }
 
 // info bubble: the calculation is re-rendered on every selection, so listen on its container
@@ -557,8 +558,7 @@ function scenarioBlock(p, summary) {
   // how the model treated this Kreis under current law: read from its results, not re-derived here
   const [, , , tightFlag, cap, increase] = row[base.id];
   const tight = tightFlag === 1;
-  const kreisLine = `Der Kreis gilt im Modell ${tight ? "als" : "nicht als"} angespannter Markt (Näherung, nicht die
-    tatsächliche Verordnungslage), die Kappungsgrenze liegt hier bei ${pct(cap)}` + (increase < par.rueckstand
+  const kreisLine = `Der Kreis gilt im Modell ${tight ? "als" : "nicht als"} angespannter Markt, die Kappungsgrenze liegt hier bei ${pct(cap)}` + (increase < par.rueckstand
       ? ` und bremst den Anstieg: Bis zur Vergleichsmiete wären es ${pct(par.rueckstand)}.`
       : `; sie bremst den Anstieg hier nicht.`);
   const rows = scenarios.szenarien.map(s => {
@@ -578,6 +578,8 @@ function scenarioBlock(p, summary) {
         In Gemeinden, die das jeweilige Land per Verordnung als angespannten Wohnungsmarkt bestimmt hat,
         sind es höchstens ${pct(par.kappung_angespannt)} (§&nbsp;558 BGB). Das betrifft vor allem
         Mietverhältnisse, deren Miete deutlich unter der Vergleichsmiete liegt.</p>
+      <p>In dieser Beispielrechnung gilt ein Kreis als angespannt, wenn seine Miete mindestens dem
+        Bundeswert entspricht. Das ist eine Näherung, nicht die tatsächliche Verordnungslage.</p>
     </div>
     <p class="note">Höchstmögliche Miete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach
       ${fmtEur.format(par.horizont)} Jahren für ein Mietverhältnis, das 2022 die Durchschnittsmiete des
@@ -589,10 +591,11 @@ function scenarioBlock(p, summary) {
     <p class="note">Rechnung für geltendes Recht: ${fmt.format(p.miete)}&nbsp;€/m² × ${fmt.format(1 + increase)}
       = ${fmt.format(row[base.id][0])}&nbsp;€/m², mal ${fmtEur.format(par.wohnflaeche)}&nbsp;m² = ${fmtEur.format(baseMonth)}&nbsp;€.</p>
     <p class="note">Bei durchschnittlicher Mietentwicklung (+${pct1(par.mietindex_anstieg)} pro Jahr, Nettokaltmieten
-      im Verbraucherpreisindex des Statistischen Bundesamts) läge die Miete bei etwa
+      im <a href="https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/01/PD25_020_611.html">Verbraucherpreisindex</a>
+      des Statistischen Bundesamts) läge die Miete bei etwa
       <strong>${fmtEur.format(row[base.id][2])}&nbsp;€</strong>, in allen Szenarien gleich: Bei diesem Tempo greift
       die Kappungsgrenze nicht.</p>
-    <p class="note">Stark vereinfachtes Demonstrationsmodell, keine Prognose.
+    <p class="note">Stark vereinfachte Beispielrechnung, keine Prognose.
       <a href="https://github.com/eskrav/mietatlas#beispiel-kappungsgrenze">Annahmen</a></p>
   </div>`;
 }
