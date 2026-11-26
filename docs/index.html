@@ -101,6 +101,16 @@
   .detail .value small { font-size: 1rem; font-weight: 400; color: var(--muted); }
   .detail .compare { color: var(--muted); font-size: 0.92rem; }
 
+  /* example model: Kappungsgrenze scenarios for the shown Kreis */
+  .scenarios { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--rule); }
+  .scenarios h3 { font-size: 0.95rem; font-weight: 500; margin: 0 0 4px; }
+  .scenarios .note { color: var(--muted); font-size: 0.85rem; }
+  .scenarios table { width: 100%; border-collapse: collapse; margin: 8px 0 6px; font-size: 0.9rem; }
+  .scenarios th { text-align: left; font-weight: 400; padding: 3px 8px 3px 0; }
+  .scenarios td { text-align: right; white-space: nowrap; padding: 3px 0 3px 8px; }
+  .scenarios td.diff { color: var(--muted); }
+  .scenarios tr.base th, .scenarios tr.base td:not(.diff) { font-weight: 500; }
+
   footer { font-size: 0.78rem; color: var(--muted); }
   footer p:first-child { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 18px; }
   footer p + p { margin-top: 6px; }
@@ -173,6 +183,10 @@ async function getJSON(url) {
   if (!res.ok) throw new Error(`${url} konnte nicht geladen werden (${res.status})`);
   return res.json();
 }
+
+// example model (optional): if this file can't be loaded, the map simply shows no scenarios
+let scenarios = null;
+getJSON("data/szenarien.json").then(s => { scenarios = s; }).catch(() => {});
 
 Promise.all([
   getJSON("data/summary.json"),
@@ -340,7 +354,37 @@ function showDetail(p, summary) {
     <h2>${p.name}</h2>
     <div class="typ">${p.BEZ}</div>
     <div class="value">${fmt.format(p.miete)} <small>€/m²</small></div>
-    <p class="compare">${rel}<br>Rang ${p.rang} von ${summary.anzahl_kreise} (1 = teuerster Kreis)</p>`;
+    <p class="compare">${rel}<br>Rang ${p.rang} von ${summary.anzahl_kreise} (1 = teuerster Kreis)</p>
+    ${scenarioBlock(p, summary)}`;
+}
+
+// Kappungsgrenze scenarios for one Kreis, from data/szenarien.json (computed by run_model.py)
+const fmtEur = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
+const pct = v => `${fmtEur.format(v * 100)}&nbsp;%`;
+
+function scenarioBlock(p, summary) {
+  const row = scenarios && scenarios.werte[p.AGS];
+  const base = scenarios && scenarios.szenarien.find(s => s.basis);
+  if (!row || !base) return "";
+  const par = base.parameter;
+  const baseMonth = row[base.id][1];
+  const tight = p.miete >= par.schwelle_angespannt * summary.deutschland;
+  const rows = scenarios.szenarien.map(s => {
+    const month = row[s.id][1];
+    const d = month - baseMonth;
+    const diff = s.basis ? "" : d === 0 ? "±0&nbsp;€" : `${d > 0 ? "+" : "−"}${fmtEur.format(Math.abs(d))}&nbsp;€`;
+    return `<tr class="${s.basis ? "base" : ""}"><th scope="row">${s.name}</th>
+      <td>${fmtEur.format(month)}&nbsp;€</td><td class="diff">${diff}</td></tr>`;
+  }).join("");
+  return `<div class="scenarios">
+    <h3>Beispielrechnung: Kappungsgrenze</h3>
+    <p class="note">Höchstmiete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach ${fmtEur.format(par.horizont)} Jahren,
+      wenn die Vergleichsmiete um ${pct(par.marktwachstum)} pro Jahr steigt. Der Kreis gilt im Modell
+      ${tight ? "als" : "nicht als"} angespannter Markt.</p>
+    <table><tbody>${rows}</tbody></table>
+    <p class="note">Vereinfachtes Beispielmodell, keine Prognose.
+      <a href="https://github.com/eskrav/mietatlas#beispiel-kappungsgrenze">Annahmen</a></p>
+  </div>`;
 }
 
 function buildLegend(breaks, summary) {
