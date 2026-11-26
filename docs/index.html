@@ -585,6 +585,8 @@ function scenarioBlock(p, summary) {
       <thead><tr><th scope="col">Szenario</th><td>höchstens</td><td></td></tr></thead>
       <tbody>${rows}</tbody>
     </table>
+    <p class="note">Rechnung für geltendes Recht: ${fmt.format(p.miete)}&nbsp;€/m² × ${fmt.format(1 + Math.min(par.rueckstand, cap))}
+      = ${fmt.format(row[base.id][0])}&nbsp;€/m², mal ${fmtEur.format(par.wohnflaeche)}&nbsp;m² = ${fmtEur.format(baseMonth)}&nbsp;€.</p>
     <p class="note">Bei durchschnittlicher Mietentwicklung (+${pct1(par.mietindex_anstieg)} pro Jahr, Nettokaltmieten
       im Verbraucherpreisindex des Statistischen Bundesamts) läge die Miete bei etwa
       <strong>${fmtEur.format(row[base.id][2])}&nbsp;€</strong>, in allen Szenarien gleich: Bei diesem Tempo greift
