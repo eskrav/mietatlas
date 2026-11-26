@@ -174,7 +174,7 @@ Als Parameter mit Art `assumption` gespeichert und damit änderbar und nachvollz
 ### Grenzen des Modells
 
 - Das Hauptergebnis ist eine **Obergrenze für ein Beispiel-Mietverhältnis, keine Prognose**: Es zeigt, wie viel die Miete höchstens steigen darf, nicht, wie viel sie tatsächlich steigt.
-- Die gesetzliche Regel gilt für einzelne Mietverhältnisse und deren jeweilige Vergleichsmiete. Das Modell wendet sie auf die Durchschnittsmiete eines ganzen Kreises an; dafür ist sie nicht gemacht, und über einzelne Mietverhältnisse sagt das Ergebnis nichts.
+- Die gesetzliche Regel gilt für einzelne Mietverhältnisse und deren jeweilige Vergleichsmiete. Das Modell wendet sie auf die Durchschnittsmiete eines ganzen Kreises an; dafür ist sie nicht gemacht, und über tatsächliche Mietverhältnisse im Kreis sagt das Ergebnis nichts.
 - Die Laufhistorie ist für die Demonstration gestellt: `db/kappung_demo.sql` setzt die Modelltabellen bei jedem Lauf zurück und baut auch die Laufhistorie neu auf, und die Modellversionen sind dort fest eingetragen. In einem echten System würden Läufe nur angehängt und die Version aus dem Code-Stand übernommen.
 
 ### Technik
