@@ -1,29 +1,9 @@
-"""Loader and database read, against a real PostgreSQL.
-
-Uses TEST_DATABASE_URL (default: postgresql:///mietatlas_test). Without a reachable
-database these tests are skipped, unless REQUIRE_DB_TESTS=1 (as in GitHub Actions),
-in which case they fail instead.
-"""
-import os
-
+"""Loader and database read, against a real PostgreSQL (fixture db in conftest.py)."""
 import psycopg
 import pytest
 
 import load_db
 from pipeline import DEUTSCHLAND, RENT_CSV, load_rents, load_rents_from_db
-
-URL = os.environ.get("TEST_DATABASE_URL", "postgresql:///mietatlas_test")
-
-
-@pytest.fixture(scope="module")
-def db():
-    try:
-        psycopg.connect(URL).close()
-    except psycopg.OperationalError as e:
-        if os.environ.get("REQUIRE_DB_TESTS") == "1":
-            pytest.fail(f"test database not reachable: {e}")
-        pytest.skip(f"no test database at {URL} (createdb mietatlas_test to run these)")
-    return URL
 
 
 def counts(url):
