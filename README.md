@@ -125,7 +125,7 @@ So lässt sich jede veröffentlichte Zahl auf Lauf, Modellversion, Rohdatei und 
 
 ## Beispiel: Kappungsgrenze
 
-> **Ein stark vereinfachtes Demonstrationsmodell, kein realistisches Szenario.** Es soll nur zeigen, wie ein Wirkungsmodell in der Datenbank abgelegt, berechnet und nachvollziehbar veröffentlicht werden kann. Die Annahmen sind gesetzt, nicht geschätzt, und die Szenarien sind frei gewählt. Die Zahlen sagen nichts darüber aus, wie sich Mieten tatsächlich entwickeln oder wie eine Änderung der Kappungsgrenze wirken würde; dafür bräuchte es unter anderem Daten dazu, wie weit einzelne Mietverhältnisse unter der Vergleichsmiete liegen.
+> **Ein Demonstrationsmodell, kein realistisches Szenario.** Es zeigt, wie sich ein Wirkungsmodell in der Datenbank ablegen, berechnen und nachvollziehbar auf der Karte darstellen lässt. Echt sind die Ausgangsmieten (Zensus 2022) und die gesetzliche Regel (§ 558 BGB). Frei gewählt sind der Abstand zur Vergleichsmiete, die Abgrenzung angespannter Märkte und die Szenarien; sie sind weder geschätzt noch auf Plausibilität geprüft. Die Ergebnisse hängen stark von diesen Annahmen ab und sagen nichts darüber aus, wie sich Mieten entwickeln oder wie eine Änderung der Kappungsgrenze wirken würde.
 
 ### Recht
 
@@ -133,15 +133,23 @@ Die [Kappungsgrenze](https://www.gesetze-im-internet.de/bgb/__558.html) gilt fü
 
 ### Modell
 
-Das Modell betrachtet je Kreis ein Beispiel-Mietverhältnis, das 2022 die Durchschnittsmiete des Kreises zahlt und dessen ortsübliche Vergleichsmiete um einen festen Abstand darüber liegt, und rechnet dessen höchstmögliche Miete.
+Das Modell betrachtet je Kreis ein Beispiel-Mietverhältnis, das 2022 die Durchschnittsmiete des Kreises zahlt (Ausgangsmiete, Zensus 2022, in €/m²), und rechnet dessen höchstmögliche Miete nach drei Jahren.
 
-Für eine solche Mieterhöhung gelten zwei Grenzen zugleich: Die Miete darf höchstens bis zur ortsüblichen Vergleichsmiete steigen, und sie darf in drei Jahren höchstens um die Kappungsgrenze steigen. Maßgeblich ist die niedrigere der beiden, daher das Minimum:
+Die ortsübliche Vergleichsmiete ist die übliche Miete für vergleichbare Wohnungen in der Gemeinde (§ 558 Abs. 2 BGB), häufig über einen Mietspiegel ermittelt. Für die Kreise liegen dazu keine Daten vor; das Modell nimmt deshalb an, dass sie um einen festen Prozentsatz über der Ausgangsmiete liegt:
 
-> Miete nach drei Jahren = Ausgangsmiete (Zensus 2022) × min(1 + Abstand zur Vergleichsmiete, 1 + Kappungsgrenze)
+> Vergleichsmiete = Ausgangsmiete × (100 % + Abstand zur Vergleichsmiete)
+
+Der Abstand ist also relativ zur Ausgangsmiete gemeint, nicht in Euro: Abstand zur Vergleichsmiete = (Vergleichsmiete − Ausgangsmiete) / Ausgangsmiete.
+
+Für eine Mieterhöhung gelten zwei Grenzen zugleich: Die Miete darf höchstens bis zur ortsüblichen Vergleichsmiete steigen, und sie darf in drei Jahren höchstens um die Kappungsgrenze steigen. Maßgeblich ist die niedrigere der beiden:
+
+> Miete nach drei Jahren = min(Vergleichsmiete, Ausgangsmiete × (100 % + Kappungsgrenze))
+
+Auch die Kappungsgrenze ist ein Prozentsatz der Ausgangsmiete.
 
 Beispiel Berlin: Ausgangsmiete 7,67 €/m², Vergleichsmiete im Modell 20 % darüber (9,20 €/m²), Kappungsgrenze 15 % (8,82 €/m²). Die Kappungsgrenze ist die niedrigere Grenze, die höchstmögliche Miete beträgt also 8,82 €/m².
 
-Zum Vergleich berechnet jeder Lauf auch die Miete bei durchschnittlicher Mietentwicklung, mit dem Anstieg der Nettokaltmieten im [Verbraucherpreisindex](https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/01/PD25_020_611.html) (2,1 % im Jahr 2024). Bei diesem Tempo greift die Kappungsgrenze nicht; dieser Wert ist daher in allen Szenarien gleich, was eine eigene Prüfabfrage sicherstellt.
+Als Vergleichswert berechnet jeder Lauf auch die Miete bei durchschnittlicher Mietentwicklung, mit dem Anstieg der Nettokaltmieten im [Verbraucherpreisindex](https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/01/PD25_020_611.html) (2,1 % im Jahr 2024). Bei diesem Tempo greift die Kappungsgrenze nicht; der Wert ist daher in allen Szenarien gleich, was eine eigene Prüfabfrage sicherstellt.
 
 ### Szenarien
 
@@ -153,18 +161,20 @@ Neben dem geltenden Recht gibt es zwei frei gewählte Beispielszenarien, die zei
 | Kappungsgrenze 10 % in angespannten Märkten | 10 % | 20 % | 103 |
 | Kappungsgrenze 15 % überall | 15 % | 15 % | 297 |
 
+Die Zahl der betroffenen Kreise folgt aus den gewählten Annahmen, nicht aus Daten: Bei einem Abstand zur Vergleichsmiete von 12 % statt 20 % wäre im Szenario „15 % überall“ kein Kreis betroffen.
+
 ### Annahmen
 
 Als Parameter mit Art `assumption` gespeichert und damit änderbar und nachvollziehbar:
 
-- **Abstand zur Vergleichsmiete** 20 %: wie weit die ortsübliche Vergleichsmiete über der Miete liegt, die das Beispiel-Mietverhältnis 2022 zahlt
+- **Abstand zur Vergleichsmiete** 20 %: wie weit die ortsübliche Vergleichsmiete über der Miete liegt, die das Beispiel-Mietverhältnis 2022 zahlt. Der Wert ist nicht geschätzt, sondern so gewählt, dass die Kappungsgrenze im Beispiel greift; bei einem kleineren Abstand blieben Szenarien ohne Wirkung
 - **Angespannter Markt**: ein Kreis gilt als angespannt, wenn seine Miete mindestens dem Bundeswert entspricht (103 von 400 Kreisen). Das ist eine Näherung; tatsächlich bestimmen die Länder per Rechtsverordnung einzelne Gemeinden oder Gemeindeteile, nicht ganze Kreise nach ihrem Mietniveau; „geltendes Recht“ im Modell entspricht deshalb nicht überall der tatsächlichen Verordnungslage
 - **Musterwohnung** 70 m²: für die Umrechnung in Euro pro Monat. Das Schema unterstützt Haushaltstypen, weil Wirkungsmodelle sie oft brauchen (etwa Energiekosten nach Haushaltstyp); hier hängt die Wirkung je m² aber nicht vom Haushalt ab, deshalb gibt es nur einen Musterhaushalt
 
 ### Grenzen des Modells
 
 - Das Hauptergebnis ist eine **Obergrenze für ein Beispiel-Mietverhältnis, keine Prognose**: Es zeigt, wie viel die Miete höchstens steigen darf, nicht, wie viel sie tatsächlich steigt.
-- Änderungen der Kappungsgrenze dürften vor allem auf Mietverhältnisse mit großem Nachholbedarf wirken, kaum auf die Durchschnittsmiete. Das ist inhaltlich die wichtigste Einschränkung.
+- Die gesetzliche Regel gilt für einzelne Mietverhältnisse und deren jeweilige Vergleichsmiete. Das Modell wendet sie auf die Durchschnittsmiete eines ganzen Kreises an; dafür ist sie nicht gemacht, und über einzelne Mietverhältnisse sagt das Ergebnis nichts.
 - Die Laufhistorie ist für die Demonstration gestellt: `db/kappung_demo.sql` setzt die Modelltabellen bei jedem Lauf zurück und baut auch die Laufhistorie neu auf, und die Modellversionen sind dort fest eingetragen. In einem echten System würden Läufe nur angehängt und die Version aus dem Code-Stand übernommen.
 
 ### Technik
