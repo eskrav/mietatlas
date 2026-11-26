@@ -36,20 +36,35 @@ DEUTSCHLAND = 7.28
 
 
 def load_rents(path: Path) -> dict:
-    """Parse the Zensus CSV export. AGS stays a string to keep leading zeros."""
+    """Parse the table as returned by the Zensus API (see fetch_zensus.py).
+
+    Layout: a few header lines, then the reference date on a line of its own,
+    then one line per Kreis: AGS;name;value[;quality flag], then a footer that
+    starts with underscores. AGS stays a string to keep leading zeros.
+    """
     rents = {}
+    in_data = False
     with open(path, encoding="utf-8-sig") as f:
         for row in csv.reader(f, delimiter=";"):
-            # data rows start with the reference date; header and footer rows don't
-            if len(row) != 5 or row[0] != STICHTAG:
+            if not row:
                 continue
-            _, ags, name, value, flag = row
+            if row[0] == STICHTAG and not any(row[1:]):
+                in_data = True  # data lines follow the reference date
+                continue
+            if row[0].startswith("___"):
+                break  # footer
+            if not in_data:
+                continue
+            assert len(row) in (3, 4), f"unexpected data line: {row}"
+            ags, name, value = row[:3]
+            flag = row[3] if len(row) == 4 else None  # flags only with quality=on
             assert ags not in rents, f"duplicate AGS in Zensus table: {ags}"
-            rents[ags] = {
-                "name": name,
-                "miete": float(value.replace(",", ".")),  # German decimal comma
-                "flag": flag,
-            }
+            try:
+                miete = float(value.replace(",", "."))  # German decimal comma
+            except ValueError:
+                raise ValueError(f"non-numeric value for {ags} ({name}): {value!r}") from None
+            rents[ags] = {"name": name, "miete": miete, "flag": flag}
+    assert in_data, f"reference date {STICHTAG} not found in {path}"
     return rents
 
 
@@ -58,6 +73,7 @@ def validate_rents(rents: dict) -> None:
     bad_ags = [a for a in rents if not (len(a) == 5 and a.isdigit())]
     assert not bad_ags, f"malformed AGS codes: {bad_ags[:5]}"
     flags = {r["flag"] for r in rents.values()}
+    assert None not in flags, "quality flags missing (fetch with quality=on)"
     assert flags <= KNOWN_FLAGS, f"unknown quality flags: {flags - KNOWN_FLAGS}"
     lo, hi = PLAUSIBLE_RANGE
     odd = {a: r["miete"] for a, r in rents.items() if not lo <= r["miete"] <= hi}

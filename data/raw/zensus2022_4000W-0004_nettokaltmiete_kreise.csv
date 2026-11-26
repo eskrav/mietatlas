@@ -1,408 +1,409 @@
-﻿Tabelle: 4000W-0004
-Wohnungskennzahlen: Durchschnittliche Nettokaltmiete;;;
-Wohnungen (Gebietsstand 15.05.2022);;;;
-;;;Durchschnittliche Nettokaltmiete;Durchschnittliche Nettokaltmiete
-;;;€/m²;€/m²
-15.05.2022;01001;Flensburg, Stadt;6,96;e
-15.05.2022;01002;Kiel, Landeshauptstadt;7,64;e
-15.05.2022;01003;Lübeck, Hansestadt;7,47;e
-15.05.2022;01004;Neumünster, Stadt;6,22;e
-15.05.2022;01051;Dithmarschen;6,12;e
-15.05.2022;01053;Herzogtum Lauenburg;7,41;e
-15.05.2022;01054;Nordfriesland;7,71;e
-15.05.2022;01055;Ostholstein;7,36;e
-15.05.2022;01056;Pinneberg;8,29;e
-15.05.2022;01057;Plön;6,91;e
-15.05.2022;01058;Rendsburg-Eckernförde;6,86;e
-15.05.2022;01059;Schleswig-Flensburg;6,45;e
-15.05.2022;01060;Segeberg;7,93;e
-15.05.2022;01061;Steinburg;6,17;e
-15.05.2022;01062;Stormarn;8,65;e
-15.05.2022;02000;Hamburg, Freie und Hansestadt;9,16;e
-15.05.2022;03101;Braunschweig, Stadt;7,27;e
-15.05.2022;03102;Salzgitter, Stadt;5,60;e
-15.05.2022;03103;Wolfsburg, Stadt;7,21;e
-15.05.2022;03151;Gifhorn;6,41;e
-15.05.2022;03153;Goslar;5,52;e
-15.05.2022;03154;Helmstedt;5,42;e
-15.05.2022;03155;Northeim;5,03;e
-15.05.2022;03157;Peine;6,05;e
-15.05.2022;03158;Wolfenbüttel;6,23;e
-15.05.2022;03159;Göttingen;7,07;e
-15.05.2022;03241;Region Hannover;7,21;e
-15.05.2022;03251;Diepholz;6,15;e
-15.05.2022;03252;Hameln-Pyrmont;5,22;e
-15.05.2022;03254;Hildesheim;5,86;e
-15.05.2022;03255;Holzminden;4,56;e
-15.05.2022;03256;Nienburg (Weser);5,38;e
-15.05.2022;03257;Schaumburg;5,63;e
-15.05.2022;03351;Celle;6,04;e
-15.05.2022;03352;Cuxhaven;5,94;e
-15.05.2022;03353;Harburg;8,17;e
-15.05.2022;03354;Lüchow-Dannenberg;4,75;e
-15.05.2022;03355;Lüneburg;7,80;e
-15.05.2022;03356;Osterholz;6,66;e
-15.05.2022;03357;Rotenburg (Wümme);6,04;e
-15.05.2022;03358;Heidekreis;5,82;e
-15.05.2022;03359;Stade;7,33;e
-15.05.2022;03360;Uelzen;5,73;e
-15.05.2022;03361;Verden;6,56;e
-15.05.2022;03401;Delmenhorst, Stadt;6,34;e
-15.05.2022;03402;Emden, Stadt;6,13;e
-15.05.2022;03403;Oldenburg (Oldenburg), Stadt;7,79;e
-15.05.2022;03404;Osnabrück, Stadt;7,30;e
-15.05.2022;03405;Wilhelmshaven, Stadt;5,69;e
-15.05.2022;03451;Ammerland;6,65;e
-15.05.2022;03452;Aurich;6,54;e
-15.05.2022;03453;Cloppenburg;5,87;e
-15.05.2022;03454;Emsland;5,89;e
-15.05.2022;03455;Friesland;5,90;e
-15.05.2022;03456;Grafschaft Bentheim;6,05;e
-15.05.2022;03457;Leer;6,11;e
-15.05.2022;03458;Oldenburg;6,36;e
-15.05.2022;03459;Osnabrück;5,71;e
-15.05.2022;03460;Vechta;6,36;e
-15.05.2022;03461;Wesermarsch;5,28;e
-15.05.2022;03462;Wittmund;6,35;e
-15.05.2022;04011;Bremen, Stadt;7,75;e
-15.05.2022;04012;Bremerhaven, Stadt;5,58;e
-15.05.2022;05111;Düsseldorf, Stadt;9,24;e
-15.05.2022;05112;Duisburg, Stadt;5,84;e
-15.05.2022;05113;Essen, Stadt;6,72;e
-15.05.2022;05114;Krefeld, Stadt;6,66;e
-15.05.2022;05116;Mönchengladbach, Stadt;6,41;e
-15.05.2022;05117;Mülheim an der Ruhr, Stadt;6,50;e
-15.05.2022;05119;Oberhausen, Stadt;5,73;e
-15.05.2022;05120;Remscheid, Stadt;5,78;e
-15.05.2022;05122;Solingen, Klingenstadt;6,38;e
-15.05.2022;05124;Wuppertal, Stadt;6,10;e
-15.05.2022;05154;Kleve;6,30;e
-15.05.2022;05158;Mettmann;7,21;e
-15.05.2022;05162;Rhein-Kreis Neuss;7,42;e
-15.05.2022;05166;Viersen;6,42;e
-15.05.2022;05170;Wesel;6,16;e
-15.05.2022;05314;Bonn, Stadt;9,09;e
-15.05.2022;05315;Köln, Stadt;9,39;e
-15.05.2022;05316;Leverkusen, Stadt;7,03;e
-15.05.2022;05334;Städteregion Aachen;7,20;e
-15.05.2022;05358;Düren;6,10;e
-15.05.2022;05362;Rhein-Erft-Kreis;7,67;e
-15.05.2022;05366;Euskirchen;6,11;e
-15.05.2022;05370;Heinsberg;6,08;e
-15.05.2022;05374;Oberbergischer Kreis;5,84;e
-15.05.2022;05378;Rheinisch-Bergischer Kreis;7,49;e
-15.05.2022;05382;Rhein-Sieg-Kreis;7,25;e
-15.05.2022;05512;Bottrop, Stadt;6,10;e
-15.05.2022;05513;Gelsenkirchen, Stadt;5,47;e
-15.05.2022;05515;Münster, Stadt;8,71;e
-15.05.2022;05554;Borken;6,26;e
-15.05.2022;05558;Coesfeld;6,21;e
-15.05.2022;05562;Recklinghausen;5,88;e
-15.05.2022;05566;Steinfurt;5,96;e
-15.05.2022;05570;Warendorf;5,92;e
-15.05.2022;05711;Bielefeld, Stadt;7,12;e
-15.05.2022;05754;Gütersloh;6,22;e
-15.05.2022;05758;Herford;5,54;e
-15.05.2022;05762;Höxter;4,76;e
-15.05.2022;05766;Lippe;5,67;e
-15.05.2022;05770;Minden-Lübbecke;5,75;e
-15.05.2022;05774;Paderborn;6,27;e
-15.05.2022;05911;Bochum, Stadt;6,25;e
-15.05.2022;05913;Dortmund, Stadt;6,45;e
-15.05.2022;05914;Hagen, Stadt der FernUniversität;5,39;e
-15.05.2022;05915;Hamm, Stadt;5,75;e
-15.05.2022;05916;Herne, Stadt;5,71;e
-15.05.2022;05954;Ennepe-Ruhr-Kreis;5,92;e
-15.05.2022;05958;Hochsauerlandkreis;5,17;e
-15.05.2022;05962;Märkischer Kreis;5,51;e
-15.05.2022;05966;Olpe;5,75;e
-15.05.2022;05970;Siegen-Wittgenstein;6,25;e
-15.05.2022;05974;Soest;5,75;e
-15.05.2022;05978;Unna;5,74;e
-15.05.2022;06411;Darmstadt, Wissenschaftsstadt;9,56;e
-15.05.2022;06412;Frankfurt am Main, Stadt;10,58;e
-15.05.2022;06413;Offenbach am Main, Stadt;8,76;e
-15.05.2022;06414;Wiesbaden, Landeshauptstadt;9,21;e
-15.05.2022;06431;Bergstraße;7,12;e
-15.05.2022;06432;Darmstadt-Dieburg;7,96;e
-15.05.2022;06433;Groß-Gerau;8,29;e
-15.05.2022;06434;Hochtaunuskreis;9,23;e
-15.05.2022;06435;Main-Kinzig-Kreis;7,31;e
-15.05.2022;06436;Main-Taunus-Kreis;9,25;e
-15.05.2022;06437;Odenwaldkreis;6,21;e
-15.05.2022;06438;Offenbach;8,58;e
-15.05.2022;06439;Rheingau-Taunus-Kreis;7,71;e
-15.05.2022;06440;Wetteraukreis;7,68;e
-15.05.2022;06531;Gießen;7,42;e
-15.05.2022;06532;Lahn-Dill-Kreis;6,33;e
-15.05.2022;06533;Limburg-Weilburg;6,10;e
-15.05.2022;06534;Marburg-Biedenkopf;7,33;e
-15.05.2022;06535;Vogelsbergkreis;5,13;e
-15.05.2022;06611;Kassel, documenta-Stadt;6,77;e
-15.05.2022;06631;Fulda;6,13;e
-15.05.2022;06632;Hersfeld-Rotenburg;5,36;e
-15.05.2022;06633;Kassel;5,78;e
-15.05.2022;06634;Schwalm-Eder-Kreis;5,26;e
-15.05.2022;06635;Waldeck-Frankenberg;5,08;e
-15.05.2022;06636;Werra-Meißner-Kreis;4,81;e
-15.05.2022;07111;Koblenz, kreisfreie Stadt;7,45;e
-15.05.2022;07131;Ahrweiler;6,34;e
-15.05.2022;07132;Altenkirchen (Westerwald);5,22;e
-15.05.2022;07133;Bad Kreuznach;6,10;e
-15.05.2022;07134;Birkenfeld;4,78;e
-15.05.2022;07135;Cochem-Zell;5,11;e
-15.05.2022;07137;Mayen-Koblenz;5,88;e
-15.05.2022;07138;Neuwied;5,91;e
-15.05.2022;07140;Rhein-Hunsrück-Kreis;5,34;e
-15.05.2022;07141;Rhein-Lahn-Kreis;5,56;e
-15.05.2022;07143;Westerwaldkreis;5,66;e
-15.05.2022;07211;Trier, kreisfreie Stadt;7,92;e
-15.05.2022;07231;Bernkastel-Wittlich;5,75;e
-15.05.2022;07232;Eifelkreis Bitburg-Prüm;6,19;e
-15.05.2022;07233;Vulkaneifel;5,21;e
-15.05.2022;07235;Trier-Saarburg;6,59;e
-15.05.2022;07311;Frankenthal (Pfalz), kreisfreie Stadt;7,12;e
-15.05.2022;07312;Kaiserslautern, kreisfreie Stadt;6,52;e
-15.05.2022;07313;Landau in der Pfalz, kreisfreie Stadt;7,80;e
-15.05.2022;07314;Ludwigshafen am Rhein, kreisfreie Stadt;7,31;e
-15.05.2022;07315;Mainz, kreisfreie Stadt;9,73;e
-15.05.2022;07316;Neustadt an der Weinstraße, kreisfreie Stadt;6,85;e
-15.05.2022;07317;Pirmasens, kreisfreie Stadt;4,62;e
-15.05.2022;07318;Speyer, kreisfreie Stadt;7,20;e
-15.05.2022;07319;Worms, kreisfreie Stadt;6,91;e
-15.05.2022;07320;Zweibrücken, kreisfreie Stadt;5,18;e
-15.05.2022;07331;Alzey-Worms;6,52;e
-15.05.2022;07332;Bad Dürkheim;6,76;e
-15.05.2022;07333;Donnersbergkreis;5,65;e
-15.05.2022;07334;Germersheim;7,07;e
-15.05.2022;07335;Kaiserslautern;6,50;e
-15.05.2022;07336;Kusel;5,49;e
-15.05.2022;07337;Südliche Weinstraße;6,55;e
-15.05.2022;07338;Rhein-Pfalz-Kreis;6,91;e
-15.05.2022;07339;Mainz-Bingen;7,61;e
-15.05.2022;07340;Südwestpfalz;4,99;e
-15.05.2022;08111;Stuttgart, Stadtkreis;10,39;e
-15.05.2022;08115;Böblingen;9,11;e
-15.05.2022;08116;Esslingen;8,89;e
-15.05.2022;08117;Göppingen;7,26;e
-15.05.2022;08118;Ludwigsburg;8,88;e
-15.05.2022;08119;Rems-Murr-Kreis;8,18;e
-15.05.2022;08121;Heilbronn, Stadtkreis;8,49;e
-15.05.2022;08125;Heilbronn, Landkreis;7,61;e
-15.05.2022;08126;Hohenlohekreis;6,86;e
-15.05.2022;08127;Schwäbisch Hall;6,72;e
-15.05.2022;08128;Main-Tauber-Kreis;6,03;e
-15.05.2022;08135;Heidenheim;6,83;e
-15.05.2022;08136;Ostalbkreis;6,97;e
-15.05.2022;08211;Baden-Baden, Stadtkreis;7,83;e
-15.05.2022;08212;Karlsruhe, Stadtkreis;8,46;e
-15.05.2022;08215;Karlsruhe, Landkreis;7,37;e
-15.05.2022;08216;Rastatt;6,99;e
-15.05.2022;08221;Heidelberg, Stadtkreis;10,02;e
-15.05.2022;08222;Mannheim, Stadtkreis;8,39;e
-15.05.2022;08225;Neckar-Odenwald-Kreis;5,97;e
-15.05.2022;08226;Rhein-Neckar-Kreis;7,59;e
-15.05.2022;08231;Pforzheim, Stadtkreis;7,36;e
-15.05.2022;08235;Calw;6,98;e
-15.05.2022;08236;Enzkreis;7,02;e
-15.05.2022;08237;Freudenstadt;6,49;e
-15.05.2022;08311;Freiburg im Breisgau, Stadtkreis;9,74;e
-15.05.2022;08315;Breisgau-Hochschwarzwald;8,01;e
-15.05.2022;08316;Emmendingen;7,54;e
-15.05.2022;08317;Ortenaukreis;6,75;e
-15.05.2022;08325;Rottweil;6,14;e
-15.05.2022;08326;Schwarzwald-Baar-Kreis;6,70;e
-15.05.2022;08327;Tuttlingen;6,78;e
-15.05.2022;08335;Konstanz;8,69;e
-15.05.2022;08336;Lörrach;8,22;e
-15.05.2022;08337;Waldshut;7,05;e
-15.05.2022;08415;Reutlingen;7,85;e
-15.05.2022;08416;Tübingen;9,20;e
-15.05.2022;08417;Zollernalbkreis;6,63;e
-15.05.2022;08421;Ulm, Stadtkreis;8,48;e
-15.05.2022;08425;Alb-Donau-Kreis;7,11;e
-15.05.2022;08426;Biberach;7,04;e
-15.05.2022;08435;Bodenseekreis;8,50;e
-15.05.2022;08436;Ravensburg;7,72;e
-15.05.2022;08437;Sigmaringen;6,24;e
-15.05.2022;09161;Ingolstadt;9,16;e
-15.05.2022;09162;München, Landeshauptstadt;12,89;e
-15.05.2022;09163;Rosenheim, Kreisfreie Stadt;9,09;e
-15.05.2022;09171;Altötting;6,36;e
-15.05.2022;09172;Berchtesgadener Land;7,39;e
-15.05.2022;09173;Bad Tölz-Wolfratshausen;9,18;e
-15.05.2022;09174;Dachau;10,09;e
-15.05.2022;09175;Ebersberg;10,56;e
-15.05.2022;09176;Eichstätt;8,02;e
-15.05.2022;09177;Erding;9,30;e
-15.05.2022;09178;Freising;10,15;e
-15.05.2022;09179;Fürstenfeldbruck;10,53;e
-15.05.2022;09180;Garmisch-Partenkirchen;8,89;e
-15.05.2022;09181;Landsberg am Lech;8,54;e
-15.05.2022;09182;Miesbach;9,58;e
-15.05.2022;09183;Mühldorf a.Inn;6,78;e
-15.05.2022;09184;München, Landkreis;11,74;e
-15.05.2022;09185;Neuburg-Schrobenhausen;7,49;e
-15.05.2022;09186;Pfaffenhofen a.d.Ilm;8,10;e
-15.05.2022;09187;Rosenheim, Landkreis;8,45;e
-15.05.2022;09188;Starnberg;10,90;e
-15.05.2022;09189;Traunstein;7,20;e
-15.05.2022;09190;Weilheim-Schongau;8,06;e
-15.05.2022;09261;Landshut, Kreisfreie Stadt;8,20;e
-15.05.2022;09262;Passau, Kreisfreie Stadt;8,03;e
-15.05.2022;09263;Straubing;6,64;e
-15.05.2022;09271;Deggendorf;6,42;e
-15.05.2022;09272;Freyung-Grafenau;4,93;e
-15.05.2022;09273;Kelheim;7,05;e
-15.05.2022;09274;Landshut, Landkreis;6,91;e
-15.05.2022;09275;Passau, Landkreis;5,83;e
-15.05.2022;09276;Regen;4,97;e
-15.05.2022;09277;Rottal-Inn;5,76;e
-15.05.2022;09278;Straubing-Bogen;5,77;e
-15.05.2022;09279;Dingolfing-Landau;6,32;e
-15.05.2022;09361;Amberg;6,36;e
-15.05.2022;09362;Regensburg, Kreisfreie Stadt;9,38;e
-15.05.2022;09363;Weiden i.d.OPf.;5,95;e
-15.05.2022;09371;Amberg-Sulzbach;5,40;e
-15.05.2022;09372;Cham;5,27;e
-15.05.2022;09373;Neumarkt i.d.OPf.;6,88;e
-15.05.2022;09374;Neustadt a.d.Waldnaab;5,05;e
-15.05.2022;09375;Regensburg, Landkreis;7,00;e
-15.05.2022;09376;Schwandorf;5,83;e
-15.05.2022;09377;Tirschenreuth;4,57;e
-15.05.2022;09461;Bamberg, Kreisfreie Stadt;7,66;e
-15.05.2022;09462;Bayreuth, Kreisfreie Stadt;7,11;e
-15.05.2022;09463;Coburg, Kreisfreie Stadt;6,38;e
-15.05.2022;09464;Hof, Kreisfreie Stadt;5,05;e
-15.05.2022;09471;Bamberg, Landkreis;5,96;e
-15.05.2022;09472;Bayreuth, Landkreis;5,37;e
-15.05.2022;09473;Coburg, Landkreis;5,31;e
-15.05.2022;09474;Forchheim;6,58;e
-15.05.2022;09475;Hof, Landkreis;4,48;e
-15.05.2022;09476;Kronach;5,27;e
-15.05.2022;09477;Kulmbach;5,41;e
-15.05.2022;09478;Lichtenfels;5,49;e
-15.05.2022;09479;Wunsiedel i.Fichtelgebirge;4,52;e
-15.05.2022;09561;Ansbach, Kreisfreie Stadt;6,68;e
-15.05.2022;09562;Erlangen;9,20;e
-15.05.2022;09563;Fürth, Kreisfreie Stadt;7,71;e
-15.05.2022;09564;Nürnberg;8,21;e
-15.05.2022;09565;Schwabach;7,11;e
-15.05.2022;09571;Ansbach, Landkreis;6,02;e
-15.05.2022;09572;Erlangen-Höchstadt;7,59;e
-15.05.2022;09573;Fürth, Landkreis;7,07;e
-15.05.2022;09574;Nürnberger Land;6,84;e
-15.05.2022;09575;Neustadt a.d.Aisch-Bad Windsheim;5,61;e
-15.05.2022;09576;Roth;6,55;e
-15.05.2022;09577;Weißenburg-Gunzenhausen;5,70;e
-15.05.2022;09661;Aschaffenburg, Kreisfreie Stadt;7,75;e
-15.05.2022;09662;Schweinfurt, Kreisfreie Stadt;6,23;e
-15.05.2022;09663;Würzburg, Kreisfreie Stadt;8,65;e
-15.05.2022;09671;Aschaffenburg, Landkreis;6,82;e
-15.05.2022;09672;Bad Kissingen;5,36;e
-15.05.2022;09673;Rhön-Grabfeld;5,22;e
-15.05.2022;09674;Haßberge;5,40;e
-15.05.2022;09675;Kitzingen;5,74;e
-15.05.2022;09676;Miltenberg;6,19;e
-15.05.2022;09677;Main-Spessart;5,58;e
-15.05.2022;09678;Schweinfurt, Landkreis;5,55;e
-15.05.2022;09679;Würzburg, Landkreis;6,83;e
-15.05.2022;09761;Augsburg, Kreisfreie Stadt;8,48;e
-15.05.2022;09762;Kaufbeuren;6,85;e
-15.05.2022;09763;Kempten (Allgäu);7,18;e
-15.05.2022;09764;Memmingen;6,51;e
-15.05.2022;09771;Aichach-Friedberg;7,58;e
-15.05.2022;09772;Augsburg, Landkreis;7,50;e
-15.05.2022;09773;Dillingen a.d.Donau;6,25;e
-15.05.2022;09774;Günzburg;6,49;e
-15.05.2022;09775;Neu-Ulm;8,00;e
-15.05.2022;09776;Lindau (Bodensee);8,04;e
-15.05.2022;09777;Ostallgäu;6,93;e
-15.05.2022;09778;Unterallgäu;6,64;e
-15.05.2022;09779;Donau-Ries;6,34;e
-15.05.2022;09780;Oberallgäu;7,07;e
-15.05.2022;10041;Regionalverband Saarbrücken;6,35;e
-15.05.2022;10042;Merzig-Wadern;6,07;e
-15.05.2022;10043;Neunkirchen;5,60;e
-15.05.2022;10044;Saarlouis;5,97;e
-15.05.2022;10045;Saarpfalz-Kreis;6,24;e
-15.05.2022;10046;St. Wendel;5,51;e
-15.05.2022;11000;Berlin, Stadt;7,67;e
-15.05.2022;12051;Brandenburg an der Havel, Stadt;5,88;e
-15.05.2022;12052;Cottbus, Stadt;5,58;e
-15.05.2022;12053;Frankfurt (Oder), Stadt;5,41;e
-15.05.2022;12054;Potsdam, Stadt;7,85;e
-15.05.2022;12060;Barnim;6,48;e
-15.05.2022;12061;Dahme-Spreewald;7,03;e
-15.05.2022;12062;Elbe-Elster;4,95;e
-15.05.2022;12063;Havelland;6,49;e
-15.05.2022;12064;Märkisch-Oderland;6,15;e
-15.05.2022;12065;Oberhavel;6,51;e
-15.05.2022;12066;Oberspreewald-Lausitz;5,02;e
-15.05.2022;12067;Oder-Spree;6,04;e
-15.05.2022;12068;Ostprignitz-Ruppin;5,49;e
-15.05.2022;12069;Potsdam-Mittelmark;6,94;e
-15.05.2022;12070;Prignitz;4,84;e
-15.05.2022;12071;Spree-Neiße;5,35;e
-15.05.2022;12072;Teltow-Fläming;6,31;e
-15.05.2022;12073;Uckermark;5,22;e
-15.05.2022;13003;Rostock;6,70;e
-15.05.2022;13004;Schwerin;6,06;e
-15.05.2022;13071;Mecklenburgische Seenplatte;5,36;e
-15.05.2022;13072;Landkreis Rostock;5,94;e
-15.05.2022;13073;Vorpommern-Rügen;5,83;e
-15.05.2022;13074;Nordwestmecklenburg;5,85;e
-15.05.2022;13075;Vorpommern-Greifswald;5,74;e
-15.05.2022;13076;Ludwigslust-Parchim;5,34;e
-15.05.2022;14511;Chemnitz, Stadt;5,26;e
-15.05.2022;14521;Erzgebirgskreis;4,65;e
-15.05.2022;14522;Mittelsachsen;5,05;e
-15.05.2022;14523;Vogtlandkreis;4,54;e
-15.05.2022;14524;Zwickau;5,01;e
-15.05.2022;14612;Dresden, Stadt;6,92;e
-15.05.2022;14625;Bautzen;5,14;e
-15.05.2022;14626;Görlitz;4,70;e
-15.05.2022;14627;Meißen;5,60;e
-15.05.2022;14628;Sächsische Schweiz-Osterzgebirge;5,45;e
-15.05.2022;14713;Leipzig, Stadt;6,44;e
-15.05.2022;14729;Leipzig;5,42;e
-15.05.2022;14730;Nordsachsen;5,30;e
-15.05.2022;15001;Dessau-Roßlau, Stadt;5,48;e
-15.05.2022;15002;Halle (Saale), Stadt;5,92;e
-15.05.2022;15003;Magdeburg, Landeshauptstadt;5,75;e
-15.05.2022;15081;Altmarkkreis Salzwedel;4,77;e
-15.05.2022;15082;Anhalt-Bitterfeld;5,22;e
-15.05.2022;15083;Börde;5,18;e
-15.05.2022;15084;Burgenlandkreis;5,08;e
-15.05.2022;15085;Harz;5,22;e
-15.05.2022;15086;Jerichower Land;5,11;e
-15.05.2022;15087;Mansfeld-Südharz;5,07;e
-15.05.2022;15088;Saalekreis;5,36;e
-15.05.2022;15089;Salzlandkreis;4,98;e
-15.05.2022;15090;Stendal;4,99;e
-15.05.2022;15091;Wittenberg;5,05;e
-15.05.2022;16051;Erfurt, Stadt;6,48;e
-15.05.2022;16052;Gera, Stadt;5,13;e
-15.05.2022;16053;Jena, Stadt;7,04;e
-15.05.2022;16054;Suhl, Stadt;5,29;e
-15.05.2022;16055;Weimar, Stadt;6,52;e
-15.05.2022;16061;Eichsfeld;5,29;e
-15.05.2022;16062;Nordhausen;5,21;e
-15.05.2022;16063;Wartburgkreis;5,43;e
-15.05.2022;16064;Unstrut-Hainich-Kreis;5,12;e
-15.05.2022;16065;Kyffhäuserkreis;4,95;e
-15.05.2022;16066;Schmalkalden-Meiningen;5,21;e
-15.05.2022;16067;Gotha;5,39;e
-15.05.2022;16068;Sömmerda;5,36;e
-15.05.2022;16069;Hildburghausen;5,07;e
-15.05.2022;16070;Ilm-Kreis;5,60;e
-15.05.2022;16071;Weimarer Land;5,42;e
-15.05.2022;16072;Sonneberg;5,21;e
-15.05.2022;16073;Saalfeld-Rudolstadt;5,29;e
-15.05.2022;16074;Saale-Holzland-Kreis;5,29;e
-15.05.2022;16075;Saale-Orla-Kreis;5,24;e
-15.05.2022;16076;Greiz;4,67;e
-15.05.2022;16077;Altenburger Land;5,03;e
+Tabelle: 4000W-0004
+Wohnungskennzahlen: Durchschnittliche Nettokaltmiete;;
+Wohnungen (Gebietsstand 15.05.2022);;;
+;;Durchschnittliche Nettokaltmiete;
+;;?/m²;?/m²
+15.05.2022;;;
+01001;Flensburg, Stadt;6,96;e
+01002;Kiel, Landeshauptstadt;7,64;e
+01003;Lübeck, Hansestadt;7,47;e
+01004;Neumünster, Stadt;6,22;e
+01051;Dithmarschen;6,12;e
+01053;Herzogtum Lauenburg;7,41;e
+01054;Nordfriesland;7,71;e
+01055;Ostholstein;7,36;e
+01056;Pinneberg;8,29;e
+01057;Plön;6,91;e
+01058;Rendsburg-Eckernförde;6,86;e
+01059;Schleswig-Flensburg;6,45;e
+01060;Segeberg;7,93;e
+01061;Steinburg;6,17;e
+01062;Stormarn;8,65;e
+02000;Hamburg, Freie und Hansestadt;9,16;e
+03101;Braunschweig, Stadt;7,27;e
+03102;Salzgitter, Stadt;5,60;e
+03103;Wolfsburg, Stadt;7,21;e
+03151;Gifhorn;6,41;e
+03153;Goslar;5,52;e
+03154;Helmstedt;5,42;e
+03155;Northeim;5,03;e
+03157;Peine;6,05;e
+03158;Wolfenbüttel;6,23;e
+03159;Göttingen;7,07;e
+03241;Region Hannover;7,21;e
+03251;Diepholz;6,15;e
+03252;Hameln-Pyrmont;5,22;e
+03254;Hildesheim;5,86;e
+03255;Holzminden;4,56;e
+03256;Nienburg (Weser);5,38;e
+03257;Schaumburg;5,63;e
+03351;Celle;6,04;e
+03352;Cuxhaven;5,94;e
+03353;Harburg;8,17;e
+03354;Lüchow-Dannenberg;4,75;e
+03355;Lüneburg;7,80;e
+03356;Osterholz;6,66;e
+03357;Rotenburg (Wümme);6,04;e
+03358;Heidekreis;5,82;e
+03359;Stade;7,33;e
+03360;Uelzen;5,73;e
+03361;Verden;6,56;e
+03401;Delmenhorst, Stadt;6,34;e
+03402;Emden, Stadt;6,13;e
+03403;Oldenburg (Oldenburg), Stadt;7,79;e
+03404;Osnabrück, Stadt;7,30;e
+03405;Wilhelmshaven, Stadt;5,69;e
+03451;Ammerland;6,65;e
+03452;Aurich;6,54;e
+03453;Cloppenburg;5,87;e
+03454;Emsland;5,89;e
+03455;Friesland;5,90;e
+03456;Grafschaft Bentheim;6,05;e
+03457;Leer;6,11;e
+03458;Oldenburg;6,36;e
+03459;Osnabrück;5,71;e
+03460;Vechta;6,36;e
+03461;Wesermarsch;5,28;e
+03462;Wittmund;6,35;e
+04011;Bremen, Stadt;7,75;e
+04012;Bremerhaven, Stadt;5,58;e
+05111;Düsseldorf, Stadt;9,24;e
+05112;Duisburg, Stadt;5,84;e
+05113;Essen, Stadt;6,72;e
+05114;Krefeld, Stadt;6,66;e
+05116;Mönchengladbach, Stadt;6,41;e
+05117;Mülheim an der Ruhr, Stadt;6,50;e
+05119;Oberhausen, Stadt;5,73;e
+05120;Remscheid, Stadt;5,78;e
+05122;Solingen, Klingenstadt;6,38;e
+05124;Wuppertal, Stadt;6,10;e
+05154;Kleve;6,30;e
+05158;Mettmann;7,21;e
+05162;Rhein-Kreis Neuss;7,42;e
+05166;Viersen;6,42;e
+05170;Wesel;6,16;e
+05314;Bonn, Stadt;9,09;e
+05315;Köln, Stadt;9,39;e
+05316;Leverkusen, Stadt;7,03;e
+05334;Städteregion Aachen;7,20;e
+05358;Düren;6,10;e
+05362;Rhein-Erft-Kreis;7,67;e
+05366;Euskirchen;6,11;e
+05370;Heinsberg;6,08;e
+05374;Oberbergischer Kreis;5,84;e
+05378;Rheinisch-Bergischer Kreis;7,49;e
+05382;Rhein-Sieg-Kreis;7,25;e
+05512;Bottrop, Stadt;6,10;e
+05513;Gelsenkirchen, Stadt;5,47;e
+05515;Münster, Stadt;8,71;e
+05554;Borken;6,26;e
+05558;Coesfeld;6,21;e
+05562;Recklinghausen;5,88;e
+05566;Steinfurt;5,96;e
+05570;Warendorf;5,92;e
+05711;Bielefeld, Stadt;7,12;e
+05754;Gütersloh;6,22;e
+05758;Herford;5,54;e
+05762;Höxter;4,76;e
+05766;Lippe;5,67;e
+05770;Minden-Lübbecke;5,75;e
+05774;Paderborn;6,27;e
+05911;Bochum, Stadt;6,25;e
+05913;Dortmund, Stadt;6,45;e
+05914;Hagen, Stadt der FernUniversität;5,39;e
+05915;Hamm, Stadt;5,75;e
+05916;Herne, Stadt;5,71;e
+05954;Ennepe-Ruhr-Kreis;5,92;e
+05958;Hochsauerlandkreis;5,17;e
+05962;Märkischer Kreis;5,51;e
+05966;Olpe;5,75;e
+05970;Siegen-Wittgenstein;6,25;e
+05974;Soest;5,75;e
+05978;Unna;5,74;e
+06411;Darmstadt, Wissenschaftsstadt;9,56;e
+06412;Frankfurt am Main, Stadt;10,58;e
+06413;Offenbach am Main, Stadt;8,76;e
+06414;Wiesbaden, Landeshauptstadt;9,21;e
+06431;Bergstraße;7,12;e
+06432;Darmstadt-Dieburg;7,96;e
+06433;Groß-Gerau;8,29;e
+06434;Hochtaunuskreis;9,23;e
+06435;Main-Kinzig-Kreis;7,31;e
+06436;Main-Taunus-Kreis;9,25;e
+06437;Odenwaldkreis;6,21;e
+06438;Offenbach;8,58;e
+06439;Rheingau-Taunus-Kreis;7,71;e
+06440;Wetteraukreis;7,68;e
+06531;Gießen;7,42;e
+06532;Lahn-Dill-Kreis;6,33;e
+06533;Limburg-Weilburg;6,10;e
+06534;Marburg-Biedenkopf;7,33;e
+06535;Vogelsbergkreis;5,13;e
+06611;Kassel, documenta-Stadt;6,77;e
+06631;Fulda;6,13;e
+06632;Hersfeld-Rotenburg;5,36;e
+06633;Kassel;5,78;e
+06634;Schwalm-Eder-Kreis;5,26;e
+06635;Waldeck-Frankenberg;5,08;e
+06636;Werra-Meißner-Kreis;4,81;e
+07111;Koblenz, kreisfreie Stadt;7,45;e
+07131;Ahrweiler;6,34;e
+07132;Altenkirchen (Westerwald);5,22;e
+07133;Bad Kreuznach;6,10;e
+07134;Birkenfeld;4,78;e
+07135;Cochem-Zell;5,11;e
+07137;Mayen-Koblenz;5,88;e
+07138;Neuwied;5,91;e
+07140;Rhein-Hunsrück-Kreis;5,34;e
+07141;Rhein-Lahn-Kreis;5,56;e
+07143;Westerwaldkreis;5,66;e
+07211;Trier, kreisfreie Stadt;7,92;e
+07231;Bernkastel-Wittlich;5,75;e
+07232;Eifelkreis Bitburg-Prüm;6,19;e
+07233;Vulkaneifel;5,21;e
+07235;Trier-Saarburg;6,59;e
+07311;Frankenthal (Pfalz), kreisfreie Stadt;7,12;e
+07312;Kaiserslautern, kreisfreie Stadt;6,52;e
+07313;Landau in der Pfalz, kreisfreie Stadt;7,80;e
+07314;Ludwigshafen am Rhein, kreisfreie Stadt;7,31;e
+07315;Mainz, kreisfreie Stadt;9,73;e
+07316;Neustadt an der Weinstraße, kreisfreie Stadt;6,85;e
+07317;Pirmasens, kreisfreie Stadt;4,62;e
+07318;Speyer, kreisfreie Stadt;7,20;e
+07319;Worms, kreisfreie Stadt;6,91;e
+07320;Zweibrücken, kreisfreie Stadt;5,18;e
+07331;Alzey-Worms;6,52;e
+07332;Bad Dürkheim;6,76;e
+07333;Donnersbergkreis;5,65;e
+07334;Germersheim;7,07;e
+07335;Kaiserslautern;6,50;e
+07336;Kusel;5,49;e
+07337;Südliche Weinstraße;6,55;e
+07338;Rhein-Pfalz-Kreis;6,91;e
+07339;Mainz-Bingen;7,61;e
+07340;Südwestpfalz;4,99;e
+08111;Stuttgart, Stadtkreis;10,39;e
+08115;Böblingen;9,11;e
+08116;Esslingen;8,89;e
+08117;Göppingen;7,26;e
+08118;Ludwigsburg;8,88;e
+08119;Rems-Murr-Kreis;8,18;e
+08121;Heilbronn, Stadtkreis;8,49;e
+08125;Heilbronn, Landkreis;7,61;e
+08126;Hohenlohekreis;6,86;e
+08127;Schwäbisch Hall;6,72;e
+08128;Main-Tauber-Kreis;6,03;e
+08135;Heidenheim;6,83;e
+08136;Ostalbkreis;6,97;e
+08211;Baden-Baden, Stadtkreis;7,83;e
+08212;Karlsruhe, Stadtkreis;8,46;e
+08215;Karlsruhe, Landkreis;7,37;e
+08216;Rastatt;6,99;e
+08221;Heidelberg, Stadtkreis;10,02;e
+08222;Mannheim, Stadtkreis;8,39;e
+08225;Neckar-Odenwald-Kreis;5,97;e
+08226;Rhein-Neckar-Kreis;7,59;e
+08231;Pforzheim, Stadtkreis;7,36;e
+08235;Calw;6,98;e
+08236;Enzkreis;7,02;e
+08237;Freudenstadt;6,49;e
+08311;Freiburg im Breisgau, Stadtkreis;9,74;e
+08315;Breisgau-Hochschwarzwald;8,01;e
+08316;Emmendingen;7,54;e
+08317;Ortenaukreis;6,75;e
+08325;Rottweil;6,14;e
+08326;Schwarzwald-Baar-Kreis;6,70;e
+08327;Tuttlingen;6,78;e
+08335;Konstanz;8,69;e
+08336;Lörrach;8,22;e
+08337;Waldshut;7,05;e
+08415;Reutlingen;7,85;e
+08416;Tübingen;9,20;e
+08417;Zollernalbkreis;6,63;e
+08421;Ulm, Stadtkreis;8,48;e
+08425;Alb-Donau-Kreis;7,11;e
+08426;Biberach;7,04;e
+08435;Bodenseekreis;8,50;e
+08436;Ravensburg;7,72;e
+08437;Sigmaringen;6,24;e
+09161;Ingolstadt;9,16;e
+09162;München, Landeshauptstadt;12,89;e
+09163;Rosenheim, Kreisfreie Stadt;9,09;e
+09171;Altötting;6,36;e
+09172;Berchtesgadener Land;7,39;e
+09173;Bad Tölz-Wolfratshausen;9,18;e
+09174;Dachau;10,09;e
+09175;Ebersberg;10,56;e
+09176;Eichstätt;8,02;e
+09177;Erding;9,30;e
+09178;Freising;10,15;e
+09179;Fürstenfeldbruck;10,53;e
+09180;Garmisch-Partenkirchen;8,89;e
+09181;Landsberg am Lech;8,54;e
+09182;Miesbach;9,58;e
+09183;Mühldorf a.Inn;6,78;e
+09184;München, Landkreis;11,74;e
+09185;Neuburg-Schrobenhausen;7,49;e
+09186;Pfaffenhofen a.d.Ilm;8,10;e
+09187;Rosenheim, Landkreis;8,45;e
+09188;Starnberg;10,90;e
+09189;Traunstein;7,20;e
+09190;Weilheim-Schongau;8,06;e
+09261;Landshut, Kreisfreie Stadt;8,20;e
+09262;Passau, Kreisfreie Stadt;8,03;e
+09263;Straubing;6,64;e
+09271;Deggendorf;6,42;e
+09272;Freyung-Grafenau;4,93;e
+09273;Kelheim;7,05;e
+09274;Landshut, Landkreis;6,91;e
+09275;Passau, Landkreis;5,83;e
+09276;Regen;4,97;e
+09277;Rottal-Inn;5,76;e
+09278;Straubing-Bogen;5,77;e
+09279;Dingolfing-Landau;6,32;e
+09361;Amberg;6,36;e
+09362;Regensburg, Kreisfreie Stadt;9,38;e
+09363;Weiden i.d.OPf.;5,95;e
+09371;Amberg-Sulzbach;5,40;e
+09372;Cham;5,27;e
+09373;Neumarkt i.d.OPf.;6,88;e
+09374;Neustadt a.d.Waldnaab;5,05;e
+09375;Regensburg, Landkreis;7,00;e
+09376;Schwandorf;5,83;e
+09377;Tirschenreuth;4,57;e
+09461;Bamberg, Kreisfreie Stadt;7,66;e
+09462;Bayreuth, Kreisfreie Stadt;7,11;e
+09463;Coburg, Kreisfreie Stadt;6,38;e
+09464;Hof, Kreisfreie Stadt;5,05;e
+09471;Bamberg, Landkreis;5,96;e
+09472;Bayreuth, Landkreis;5,37;e
+09473;Coburg, Landkreis;5,31;e
+09474;Forchheim;6,58;e
+09475;Hof, Landkreis;4,48;e
+09476;Kronach;5,27;e
+09477;Kulmbach;5,41;e
+09478;Lichtenfels;5,49;e
+09479;Wunsiedel i.Fichtelgebirge;4,52;e
+09561;Ansbach, Kreisfreie Stadt;6,68;e
+09562;Erlangen;9,20;e
+09563;Fürth, Kreisfreie Stadt;7,71;e
+09564;Nürnberg;8,21;e
+09565;Schwabach;7,11;e
+09571;Ansbach, Landkreis;6,02;e
+09572;Erlangen-Höchstadt;7,59;e
+09573;Fürth, Landkreis;7,07;e
+09574;Nürnberger Land;6,84;e
+09575;Neustadt a.d.Aisch-Bad Windsheim;5,61;e
+09576;Roth;6,55;e
+09577;Weißenburg-Gunzenhausen;5,70;e
+09661;Aschaffenburg, Kreisfreie Stadt;7,75;e
+09662;Schweinfurt, Kreisfreie Stadt;6,23;e
+09663;Würzburg, Kreisfreie Stadt;8,65;e
+09671;Aschaffenburg, Landkreis;6,82;e
+09672;Bad Kissingen;5,36;e
+09673;Rhön-Grabfeld;5,22;e
+09674;Haßberge;5,40;e
+09675;Kitzingen;5,74;e
+09676;Miltenberg;6,19;e
+09677;Main-Spessart;5,58;e
+09678;Schweinfurt, Landkreis;5,55;e
+09679;Würzburg, Landkreis;6,83;e
+09761;Augsburg, Kreisfreie Stadt;8,48;e
+09762;Kaufbeuren;6,85;e
+09763;Kempten (Allgäu);7,18;e
+09764;Memmingen;6,51;e
+09771;Aichach-Friedberg;7,58;e
+09772;Augsburg, Landkreis;7,50;e
+09773;Dillingen a.d.Donau;6,25;e
+09774;Günzburg;6,49;e
+09775;Neu-Ulm;8,00;e
+09776;Lindau (Bodensee);8,04;e
+09777;Ostallgäu;6,93;e
+09778;Unterallgäu;6,64;e
+09779;Donau-Ries;6,34;e
+09780;Oberallgäu;7,07;e
+10041;Regionalverband Saarbrücken;6,35;e
+10042;Merzig-Wadern;6,07;e
+10043;Neunkirchen;5,60;e
+10044;Saarlouis;5,97;e
+10045;Saarpfalz-Kreis;6,24;e
+10046;St. Wendel;5,51;e
+11000;Berlin, Stadt;7,67;e
+12051;Brandenburg an der Havel, Stadt;5,88;e
+12052;Cottbus, Stadt;5,58;e
+12053;Frankfurt (Oder), Stadt;5,41;e
+12054;Potsdam, Stadt;7,85;e
+12060;Barnim;6,48;e
+12061;Dahme-Spreewald;7,03;e
+12062;Elbe-Elster;4,95;e
+12063;Havelland;6,49;e
+12064;Märkisch-Oderland;6,15;e
+12065;Oberhavel;6,51;e
+12066;Oberspreewald-Lausitz;5,02;e
+12067;Oder-Spree;6,04;e
+12068;Ostprignitz-Ruppin;5,49;e
+12069;Potsdam-Mittelmark;6,94;e
+12070;Prignitz;4,84;e
+12071;Spree-Neiße;5,35;e
+12072;Teltow-Fläming;6,31;e
+12073;Uckermark;5,22;e
+13003;Rostock;6,70;e
+13004;Schwerin;6,06;e
+13071;Mecklenburgische Seenplatte;5,36;e
+13072;Landkreis Rostock;5,94;e
+13073;Vorpommern-Rügen;5,83;e
+13074;Nordwestmecklenburg;5,85;e
+13075;Vorpommern-Greifswald;5,74;e
+13076;Ludwigslust-Parchim;5,34;e
+14511;Chemnitz, Stadt;5,26;e
+14521;Erzgebirgskreis;4,65;e
+14522;Mittelsachsen;5,05;e
+14523;Vogtlandkreis;4,54;e
+14524;Zwickau;5,01;e
+14612;Dresden, Stadt;6,92;e
+14625;Bautzen;5,14;e
+14626;Görlitz;4,70;e
+14627;Meißen;5,60;e
+14628;Sächsische Schweiz-Osterzgebirge;5,45;e
+14713;Leipzig, Stadt;6,44;e
+14729;Leipzig;5,42;e
+14730;Nordsachsen;5,30;e
+15001;Dessau-Roßlau, Stadt;5,48;e
+15002;Halle (Saale), Stadt;5,92;e
+15003;Magdeburg, Landeshauptstadt;5,75;e
+15081;Altmarkkreis Salzwedel;4,77;e
+15082;Anhalt-Bitterfeld;5,22;e
+15083;Börde;5,18;e
+15084;Burgenlandkreis;5,08;e
+15085;Harz;5,22;e
+15086;Jerichower Land;5,11;e
+15087;Mansfeld-Südharz;5,07;e
+15088;Saalekreis;5,36;e
+15089;Salzlandkreis;4,98;e
+15090;Stendal;4,99;e
+15091;Wittenberg;5,05;e
+16051;Erfurt, Stadt;6,48;e
+16052;Gera, Stadt;5,13;e
+16053;Jena, Stadt;7,04;e
+16054;Suhl, Stadt;5,29;e
+16055;Weimar, Stadt;6,52;e
+16061;Eichsfeld;5,29;e
+16062;Nordhausen;5,21;e
+16063;Wartburgkreis;5,43;e
+16064;Unstrut-Hainich-Kreis;5,12;e
+16065;Kyffhäuserkreis;4,95;e
+16066;Schmalkalden-Meiningen;5,21;e
+16067;Gotha;5,39;e
+16068;Sömmerda;5,36;e
+16069;Hildburghausen;5,07;e
+16070;Ilm-Kreis;5,60;e
+16071;Weimarer Land;5,42;e
+16072;Sonneberg;5,21;e
+16073;Saalfeld-Rudolstadt;5,29;e
+16074;Saale-Holzland-Kreis;5,29;e
+16075;Saale-Orla-Kreis;5,24;e
+16076;Greiz;4,67;e
+16077;Altenburger Land;5,03;e
 __________
 © Statistische Ämter des Bundes und der Länder, Deutschland, 2026. Lizenziert unter der Datenlizenz Deutschland - Namensnennung - Version 2.0
-Stand: 12.11.2026 / 17:46:54
+Stand: 26.11.2026 / 12:18:51
