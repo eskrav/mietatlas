@@ -13,13 +13,15 @@ Ein kleiner Prototyp, entstanden als Arbeitsprobe: ein Indikator, eine räumlich
 | [Zensus 2022](https://ergebnisse.zensus2022.de), Tabelle 4000W-0004 | Durchschnittliche Nettokaltmiete (€/m²) je Kreis | Stichtag 15.05.2022 | [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0), © Statistische Ämter des Bundes und der Länder, Deutschland, 2026 |
 | [BKG](https://www.bkg.bund.de), Verwaltungsgebiete 1:250 000 (VG250), Ebene Kreise | Kreisgrenzen | 31.12.2022 | [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0), © BKG (2026), [Datenquellen](https://sgx.geodatenzentrum.de/web_public/gdz/datenquellen/datenquellen_vg_nuts.pdf); Daten verändert (Grenzen vereinfacht und umprojiziert) |
 
-Die Rohdaten liegen unverändert unter `data/raw/`. Die Zensus-Tabelle ruft `fetch_zensus.py` über die Schnittstelle (API) der Zensusdatenbank ab; die Kreisgrenzen habe ich im November 2026 manuell heruntergeladen.
+Die Rohdaten liegen unverändert unter `data/raw/`. Die Zensus-Tabelle ruft `fetch_zensus.py` über die Schnittstelle (API) der Zensusdatenbank ab, die Kreisgrenzen lädt `fetch_vg250.py` vom Downloadserver des BKG.
 
 Wichtig für die Interpretation: Es handelt sich um **Bestandsmieten** aller vermieteten Wohnungen zum Zensusstichtag, nicht um aktuelle Angebotsmieten.
 
 ## Pipeline
 
 `fetch_zensus.py` ruft Tabelle 4000W-0004 auf Kreisebene ab, entpackt sie und ersetzt die Datei in `data/raw/` nur, wenn sie dieselben Prüfungen wie `pipeline.py` besteht; sonst bleibt die bisherige Datei unverändert.
+
+`fetch_vg250.py` lädt das VG250-Archiv (Stand 31.12.2022) vom BKG, entnimmt nur die Kreisebene und ersetzt die Dateien in `data/raw/vg250/` ebenfalls erst, wenn sie die Prüfungen aus `pipeline.py` bestehen. Ein Konto ist dafür nicht nötig.
 
 `pipeline.py` lädt beide Quellen, prüft sie, verknüpft sie über den Amtlichen Gemeindeschlüssel (AGS) und schreibt die Daten für die Karte nach `docs/data/`. Jede Prüfung bricht den Build mit einer klaren Fehlermeldung ab:
 
@@ -41,6 +43,7 @@ Die Karte lädt keine Inhalte von Drittanbietern: Schriftart (Fira Sans, SIL Ope
 ```bash
 pip install -r requirements.txt
 python fetch_zensus.py              # optional: Zensus-Tabelle neu abrufen (siehe unten)
+python fetch_vg250.py               # optional: Kreisgrenzen neu abrufen
 python pipeline.py
 cd docs && python -m http.server   # dann http://localhost:8000
 ```
