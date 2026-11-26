@@ -194,7 +194,7 @@
 <div class="layout">
   <header class="panel intro">
     <h1>Was kostet Wohnen zur Miete in Ihrem Kreis?</h1>
-    <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte. Es handelt sich um Bestandsmieten aus dem Zensus 2022, nicht um aktuelle Angebotsmieten.</p>
+    <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte. Es handelt sich um Bestandsmieten aus dem Zensus 2022, nicht um aktuelle Angebotsmieten. Nach Auswahl eines Kreises zeigt eine vereinfachte Beispielrechnung, wie sich die Kappungsgrenze für Mieterhöhungen dort auswirken könnte.</p>
     <div id="view-switch" hidden>
       <label for="view">Ansicht</label>
       <select id="view"></select>
@@ -207,7 +207,7 @@
     <div id="legend-scenario" hidden>
       <div class="legend-diff" id="legend-diff"></div>
       <p class="legend-unit" id="legend-diff-unit"></p>
-      <p class="model-note">Modellrechnung mit vereinfachten Annahmen, keine Prognose. Gezeigt wird die Änderung gegenüber dem geltenden Recht.</p>
+      <p class="model-note">Modellrechnung mit vereinfachten Annahmen, keine Prognose. Gezeigt wird, wie sich die höchstmögliche Monatsmiete des Beispiel-Mietverhältnisses gegenüber dem geltenden Recht ändert.</p>
     </div>
   </header>
 
@@ -466,17 +466,17 @@ function setupScenarioView(kreise) {
   const par = base.parameter;
   const select = document.getElementById("view");
   select.innerHTML = `<option value="miete">Nettokaltmiete 2022 (Zensus)</option>
-    <optgroup label="Modellrechnung: Änderung gegenüber geltendem Recht">` +
+    <optgroup label="Modellrechnung: Höchstmiete gegenüber geltendem Recht">` +
     others.map(s => `<option value="${s.id}">${s.name}</option>`).join("") + `</optgroup>`;
   document.getElementById("view-switch").hidden = false;
   document.getElementById("legend-diff").innerHTML = [
     [css("--neutral"), "unverändert"],
-    [DIFF_COLORS[0], `weniger als ${fmtEur.format(width)} € günstiger`],
-    [DIFF_COLORS[1], `${fmtEur.format(width)} bis ${fmtEur.format(2 * width)} € günstiger`],
-    [DIFF_COLORS[2], `mehr als ${fmtEur.format(2 * width)} € günstiger`],
+    [DIFF_COLORS[0], `Höchstmiete um weniger als ${fmtEur.format(width)} € niedriger`],
+    [DIFF_COLORS[1], `um ${fmtEur.format(width)} bis ${fmtEur.format(2 * width)} € niedriger`],
+    [DIFF_COLORS[2], `um mehr als ${fmtEur.format(2 * width)} € niedriger`],
   ].map(([c, t]) => `<div><span style="background:${c}"></span>${t}</div>`).join("");
   document.getElementById("legend-diff-unit").textContent =
-    `Monatsmiete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach ${fmtEur.format(par.horizont)} Jahren`;
+    `Höchstmögliche Monatsmiete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach ${fmtEur.format(par.horizont)} Jahren`;
 
   let listener = () => {};
   select.addEventListener("change", () => {
@@ -501,7 +501,8 @@ function setupScenarioView(kreise) {
 function tipHTML(p) {
   if (view === "miete") return `<strong>${p.name}</strong><br>${fmt.format(p.miete)}&nbsp;€/m²`;
   const d = p[`diff_${view}`];
-  const change = d === 0 ? "unverändert" : `${d > 0 ? "+" : "−"}${fmtEur.format(Math.abs(d))}&nbsp;€ pro Monat`;
+  const change = d === 0 ? "Höchstmiete unverändert"
+    : `Höchstmiete ${d > 0 ? "+" : "−"}${fmtEur.format(Math.abs(d))}&nbsp;€ pro Monat`;
   return `<strong>${p.name}</strong><br>${change} <small>(Modellrechnung)</small>`;
 }
 
@@ -555,8 +556,8 @@ function scenarioBlock(p, summary) {
   const baseMonth = row[base.id][1];
   const tight = p.miete >= par.schwelle_angespannt * summary.deutschland;
   const cap = tight ? par.kappung_angespannt : par.kappung_allgemein;   // under current law
-  const kreisLine = `Der Kreis gilt im Modell ${tight ? "als" : "nicht als"} angespannter Markt, die Kappungsgrenze
-    liegt hier bei ${pct(cap)}` + (par.rueckstand > cap
+  const kreisLine = `Der Kreis gilt im Modell ${tight ? "als" : "nicht als"} angespannter Markt (Näherung, nicht die
+    tatsächliche Verordnungslage), die Kappungsgrenze liegt hier bei ${pct(cap)}` + (par.rueckstand > cap
       ? ` und bremst den Anstieg: Bis zur Vergleichsmiete wären es ${pct(par.rueckstand)}.`
       : `; sie bremst den Anstieg hier nicht.`);
   const rows = scenarios.szenarien.map(s => {
@@ -571,20 +572,21 @@ function scenarioBlock(p, summary) {
     <h2>Beispielrechnung: Kappungsgrenze<button type="button" class="info" aria-expanded="false"
       aria-controls="kappung-info" aria-label="Was ist die Kappungsgrenze?">?</button></h2>
     <div class="bubble" id="kappung-info" role="note" hidden>
-      <p>In bestehenden Mietverträgen darf die Miete in drei Jahren um höchstens ${pct(par.kappung_allgemein)}
-        steigen, in Gebieten mit angespanntem Wohnungsmarkt um höchstens ${pct(par.kappung_angespannt)}
-        (§&nbsp;558 BGB), und nie über die ortsübliche Vergleichsmiete. Das betrifft vor allem
+      <p>In bestehenden Mietverträgen darf die Miete bei Erhöhungen bis zur ortsüblichen Vergleichsmiete
+        in drei Jahren um höchstens ${pct(par.kappung_allgemein)} steigen (Modernisierungen ausgenommen).
+        In Gemeinden, die das jeweilige Land per Verordnung als angespannten Wohnungsmarkt bestimmt hat,
+        sind es höchstens ${pct(par.kappung_angespannt)} (§&nbsp;558 BGB). Das betrifft vor allem
         Mietverhältnisse, deren Miete deutlich unter der Vergleichsmiete liegt.</p>
     </div>
     <p class="note">Höchstmögliche Miete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach
-      ${fmtEur.format(par.horizont)} Jahren, wenn die Miete heute ${pct(par.rueckstand)} unter der
-      Vergleichsmiete liegt. ${kreisLine}</p>
+      ${fmtEur.format(par.horizont)} Jahren für ein Mietverhältnis, das 2022 die Durchschnittsmiete des
+      Kreises zahlt und damit ${pct(par.rueckstand)} unter der Vergleichsmiete liegt. ${kreisLine}</p>
     <table>
       <thead><tr><th scope="col">Szenario</th><td>höchstens</td><td></td></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <p class="note">Bei durchschnittlicher Mietentwicklung (+${pct1(par.mietindex_anstieg)} pro Jahr laut
-      Mietindex des Statistischen Bundesamts) läge die Miete bei etwa
+    <p class="note">Bei durchschnittlicher Mietentwicklung (+${pct1(par.mietindex_anstieg)} pro Jahr, Nettokaltmieten
+      im Verbraucherpreisindex des Statistischen Bundesamts) läge die Miete bei etwa
       <strong>${fmtEur.format(row[base.id][2])}&nbsp;€</strong>, in allen Szenarien gleich: Bei diesem Tempo greift
       die Kappungsgrenze nicht.</p>
     <p class="note">Stark vereinfachtes Demonstrationsmodell, keine Prognose.

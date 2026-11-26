@@ -1,6 +1,6 @@
 # Nettokaltmieten nach Kreisen (Zensus 2022)
 
-Interaktive Karte der durchschnittlichen Nettokaltmiete je Quadratmeter für alle 400 Kreise und kreisfreien Städte, mit automatisierter Datenpipeline und Qualitätsprüfungen.
+Interaktive Karte der durchschnittlichen Nettokaltmiete je Quadratmeter für alle 400 Kreise und kreisfreien Städte, mit automatisierter Datenpipeline, Qualitätsprüfungen und einem vereinfachten Beispielmodell zur Kappungsgrenze, dessen Szenarien sich auf der Karte umschalten lassen.
 
 **Karte:** https://eskrav.github.io/mietatlas/
 
@@ -70,11 +70,11 @@ psql -d mietatlas -f db/model_schema.sql
 
 > **Ein stark vereinfachtes Demonstrationsmodell, kein realistisches Szenario.** Es soll nur zeigen, wie ein Wirkungsmodell in der Datenbank abgelegt, berechnet und nachvollziehbar veröffentlicht werden kann. Die Annahmen sind gesetzt, nicht geschätzt, und die Szenarien sind frei gewählt. Die Zahlen sagen nichts darüber aus, wie sich Mieten tatsächlich entwickeln oder wie eine Änderung der Kappungsgrenze wirken würde; dafür bräuchte es unter anderem Daten dazu, wie weit einzelne Mietverhältnisse unter der Vergleichsmiete liegen.
 
-`db/model_kappung.sql` füllt diese Tabellen mit einem einfachen Modell zur [Kappungsgrenze](https://www.gesetze-im-internet.de/bgb/__558.html) für Mieterhöhungen in bestehenden Mietverhältnissen (§ 558 Abs. 3 BGB): Nach geltendem Recht darf die Miete in drei Jahren um höchstens 20 % steigen, in Gebieten mit angespanntem Wohnungsmarkt um höchstens 15 %, und nie über die ortsübliche Vergleichsmiete. Die Kappungsgrenze wirkt deshalb vor allem bei Mietverhältnissen, deren Miete deutlich unter der Vergleichsmiete liegt, etwa bei langen Mietverhältnissen ohne Erhöhung. Für ein solches Mietverhältnis rechnet das Modell je Kreis die höchstmögliche Miete:
+`db/model_kappung.sql` füllt diese Tabellen mit einem einfachen Modell zur [Kappungsgrenze](https://www.gesetze-im-internet.de/bgb/__558.html) für Mieterhöhungen in bestehenden Mietverhältnissen (§ 558 Abs. 3 BGB): Nach geltendem Recht darf die Miete bei Erhöhungen bis zur ortsüblichen Vergleichsmiete in drei Jahren um höchstens 20 % steigen (Erhöhungen wegen Modernisierung oder Betriebskosten zählen nicht mit). In Gemeinden oder Gemeindeteilen, die das jeweilige Land per Rechtsverordnung als angespannten Wohnungsmarkt bestimmt hat, sind es höchstens 15 %. Die Kappungsgrenze wirkt deshalb vor allem bei Mietverhältnissen, deren Miete deutlich unter der Vergleichsmiete liegt, etwa bei langen Mietverhältnissen ohne Erhöhung. Das Modell betrachtet je Kreis ein Beispiel-Mietverhältnis, das 2022 die Durchschnittsmiete des Kreises zahlt und um einen festen Abstand unter der Vergleichsmiete liegt, und rechnet dessen höchstmögliche Miete:
 
-> Miete nach drei Jahren = Miete heute × min(1 + Abstand zur Vergleichsmiete, 1 + Kappungsgrenze)
+> Miete nach drei Jahren = Ausgangsmiete (Zensus 2022) × min(1 + Abstand zur Vergleichsmiete, 1 + Kappungsgrenze)
 
-Zum Vergleich berechnet jeder Lauf auch die Miete bei durchschnittlicher Mietentwicklung, mit dem Anstieg der Nettokaltmieten laut [Verbraucherpreisindex](https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/01/PD25_020_611.html) (2,1 % im Jahr 2024). Bei diesem Tempo greift die Kappungsgrenze nicht; dieser Wert ist daher in allen Szenarien gleich, was eine eigene Prüfabfrage sicherstellt. Das ist auch inhaltlich die wichtigste Einschränkung: Änderungen der Kappungsgrenze wirken auf Mietverhältnisse mit großem Nachholbedarf, kaum auf die Durchschnittsmiete.
+Zum Vergleich berechnet jeder Lauf auch die Miete bei durchschnittlicher Mietentwicklung, mit dem Anstieg der Nettokaltmieten im [Verbraucherpreisindex](https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/01/PD25_020_611.html) (2,1 % im Jahr 2024). Bei diesem Tempo greift die Kappungsgrenze nicht; dieser Wert ist daher in allen Szenarien gleich, was eine eigene Prüfabfrage sicherstellt. Das ist auch inhaltlich die wichtigste Einschränkung: Änderungen der Kappungsgrenze dürften vor allem auf Mietverhältnisse mit großem Nachholbedarf wirken, kaum auf die Durchschnittsmiete.
 
 Eingang sind die echten Kreiswerte aus `observations`; berechnet wird in der Datenbank, je Modelllauf aus den dort gespeicherten Parameterwerten. Neben dem geltenden Recht gibt es zwei frei gewählte Beispielszenarien, die zeigen, dass dieselbe Änderung je nach Ausgestaltung ganz andere Kreise trifft:
 
@@ -86,8 +86,8 @@ Eingang sind die echten Kreiswerte aus `observations`; berechnet wird in der Dat
 
 Annahmen, als Parameter mit Art `assumption` gespeichert und damit änderbar und nachvollziehbar:
 
-- **Abstand zur Vergleichsmiete** 20 %: wie weit die Miete des Beispiel-Mietverhältnisses heute unter der ortsüblichen Vergleichsmiete liegt
-- **Angespannter Markt**: ein Kreis gilt als angespannt, wenn seine Miete mindestens dem Bundeswert entspricht (103 von 400 Kreisen). Das ist eine Näherung; tatsächlich bestimmen die Länder die Gebiete per Rechtsverordnung, häufig für einzelne Gemeinden
+- **Abstand zur Vergleichsmiete** 20 %: wie weit die Miete des Beispiel-Mietverhältnisses 2022 unter der ortsüblichen Vergleichsmiete liegt
+- **Angespannter Markt**: ein Kreis gilt als angespannt, wenn seine Miete mindestens dem Bundeswert entspricht (103 von 400 Kreisen). Das ist eine Näherung; tatsächlich bestimmen die Länder per Rechtsverordnung einzelne Gemeinden oder Gemeindeteile, nicht ganze Kreise nach ihrem Mietniveau; „geltendes Recht“ im Modell entspricht deshalb nicht überall der tatsächlichen Verordnungslage
 - **Musterwohnung** 70 m²: für die Umrechnung in Euro pro Monat. Das Schema unterstützt Haushaltstypen, weil Wirkungsmodelle sie oft brauchen (etwa Energiekosten nach Haushaltstyp); hier hängt die Wirkung je m² aber nicht vom Haushalt ab, deshalb gibt es nur einen Musterhaushalt
 
 Das Hauptergebnis ist eine **Obergrenze für ein Beispiel-Mietverhältnis, keine Prognose**: Es zeigt, wie viel die Miete höchstens steigen darf, nicht, wie viel sie tatsächlich steigt. Ein früherer Lauf mit 15 % Abstand zur Vergleichsmiete zeigt, wie geänderte Annahmen nachvollziehbar bleiben; ein unveröffentlichter Entwurf mit engerer Abgrenzung angespannter Märkte zeigt, dass nur freigegebene Szenarien in `published_results` erscheinen.
