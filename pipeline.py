@@ -1,16 +1,20 @@
 """Build the Kreis-level rent dataset for the map.
 
-Steps: load the Zensus 2022 rent table and the BKG VG250 Kreis boundaries,
-validate both, join them on the 5-digit Amtlicher Gemeindeschluessel (AGS),
+Steps: read the Zensus 2022 rents from the PostgreSQL database (filled from data/raw/
+by load_db.py) and the BKG VG250 Kreis boundaries from data/raw/, validate both,
+join them on the 5-digit Amtlicher Gemeindeschluessel (AGS),
 simplify the boundaries for the web, and write a GeoJSON for the map.
 Every check raises an error, so a broken input stops the build.
 """
 import csv
 import json
+import os
 import statistics
+import sys
 from pathlib import Path
 
 import geopandas as gpd
+import psycopg
 import shapely
 
 RAW = Path("data/raw")
@@ -18,9 +22,12 @@ OUT = Path("docs/data")  # GitHub Pages serves the docs/ folder
 
 RENT_CSV = RAW / "zensus2022_4000W-0004_nettokaltmiete_kreise.csv"
 KREISE_SHP = RAW / "vg250" / "VG250_KRS.shp"
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql:///mietatlas")
 
 EXPECTED_KREISE = 400          # Gebietsstand 2022: 294 Landkreise + 106 kreisfreie Staedte
 STICHTAG = "15.05.2022"        # census reference date in the Zensus table
+YEAR = int(STICHTAG[-4:])      # year under which the values are stored in the database
+INDICATOR_ID = "nettokaltmiete"
 KNOWN_FLAGS = {"e"}            # quality flags we know how to handle ("e" = final value)
 PLAUSIBLE_RANGE = (2.0, 20.0)  # EUR/m2; outside this, something likely went wrong in parsing
 SIMPLIFY_TOLERANCE_M = 300     # metres, applied in UTM32 before converting to WGS84
@@ -69,15 +76,51 @@ def load_rents(path: Path) -> dict:
 
 
 def validate_rents(rents: dict) -> None:
-    assert len(rents) == EXPECTED_KREISE, f"expected {EXPECTED_KREISE} Kreise, got {len(rents)}"
-    bad_ags = [a for a in rents if not (len(a) == 5 and a.isdigit())]
-    assert not bad_ags, f"malformed AGS codes: {bad_ags[:5]}"
+    """Checks on the raw file: quality flags, plus the value checks below."""
     flags = {r["flag"] for r in rents.values()}
     assert None not in flags, "quality flags missing (fetch with quality=on)"
     assert flags <= KNOWN_FLAGS, f"unknown quality flags: {flags - KNOWN_FLAGS}"
+    validate_values(rents)
+
+
+def validate_values(rents: dict) -> None:
+    """Checks on the values, wherever they were read from (raw file or database)."""
+    assert len(rents) == EXPECTED_KREISE, f"expected {EXPECTED_KREISE} Kreise, got {len(rents)}"
+    bad_ags = [a for a in rents if not (len(a) == 5 and a.isdigit())]
+    assert not bad_ags, f"malformed AGS codes: {bad_ags[:5]}"
     lo, hi = PLAUSIBLE_RANGE
     odd = {a: r["miete"] for a, r in rents.items() if not lo <= r["miete"] <= hi}
     assert not odd, f"implausible rent values: {odd}"
+
+
+def load_rents_from_db(url: str = DATABASE_URL) -> tuple[dict, float]:
+    """Read Kreis names and rents, and the national value, from the database
+    that load_db.py fills from data/raw/."""
+    try:
+        conn = psycopg.connect(url)
+    except psycopg.OperationalError as e:
+        sys.exit(f"Cannot connect to the database ({e}).\n"
+                 "Start PostgreSQL and run load_db.py before pipeline.py.")
+    with conn, conn.cursor() as cur:
+        try:
+            cur.execute(
+                """SELECT r.region_id, r.name, o.value
+                   FROM atlas.observations o
+                   JOIN atlas.regions r USING (region_id)
+                   WHERE o.indicator_id = %s AND o.year = %s AND r.level = 'kreis'""",
+                (INDICATOR_ID, YEAR),
+            )
+        except psycopg.errors.UndefinedTable:
+            sys.exit("Database has no atlas tables yet; run load_db.py before pipeline.py.")
+        rents = {ags: {"name": name, "miete": float(value)} for ags, name, value in cur}
+        cur.execute(
+            """SELECT value FROM atlas.observations
+               WHERE region_id = 'DE' AND indicator_id = %s AND year = %s""",
+            (INDICATOR_ID, YEAR),
+        )
+        row = cur.fetchone()
+    assert row, "national value missing in the database"
+    return rents, float(row[0])
 
 
 def load_kreise(path: Path) -> gpd.GeoDataFrame:
@@ -117,8 +160,8 @@ def equal_interval_breaks(values, n_classes: int, trim: tuple) -> list:
 
 
 def main() -> None:
-    rents = load_rents(RENT_CSV)
-    validate_rents(rents)
+    rents, deutschland = load_rents_from_db()
+    validate_values(rents)
     kreise = load_kreise(KREISE_SHP)
     validate_join(rents, kreise)
 
@@ -149,7 +192,7 @@ def main() -> None:
         "min": values[0],
         "max": values[-1],
         "median": round(statistics.median(values), 2),
-        "deutschland": DEUTSCHLAND,
+        "deutschland": deutschland,
         "klassengrenzen": breaks,
         "kreise_je_klasse": counts,
     }

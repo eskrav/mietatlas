@@ -23,7 +23,7 @@ Wichtig für die Interpretation: Es handelt sich um **Bestandsmieten** aller ver
 
 `fetch_vg250.py` lädt das VG250-Archiv (Stand 31.12.2022) vom BKG, entnimmt nur die Kreisebene und ersetzt die Dateien in `data/raw/vg250/` ebenfalls erst, wenn sie die Prüfungen aus `pipeline.py` bestehen. Ein Konto ist dafür nicht nötig.
 
-`pipeline.py` lädt beide Quellen, prüft sie, verknüpft sie über den Amtlichen Gemeindeschlüssel (AGS) und schreibt die Daten für die Karte nach `docs/data/`. Jede Prüfung bricht den Build mit einer klaren Fehlermeldung ab:
+`load_db.py` lädt die geprüfte Zensus-Tabelle in eine PostgreSQL-Datenbank (siehe unten). `pipeline.py` liest die Mietwerte aus der Datenbank und die Kreisgrenzen aus `data/raw/vg250/`, prüft beide, verknüpft sie über den Amtlichen Gemeindeschlüssel (AGS) und schreibt die Daten für die Karte nach `docs/data/`. Jede Prüfung bricht den Build mit einer klaren Fehlermeldung ab:
 
 - genau 400 Kreise, eindeutige 5-stellige AGS in beiden Quellen (als Text, damit führende Nullen erhalten bleiben)
 - nur bekannte Qualitätskennzeichen, Werte in einem plausiblen Bereich
@@ -32,17 +32,17 @@ Wichtig für die Interpretation: Es handelt sich um **Bestandsmieten** aller ver
 
 Die Grenzen werden mit Coverage-Simplification vereinfacht, damit benachbarte Kreise exakt gemeinsame Grenzen behalten (keine Lücken oder Überlappungen).
 
-Bei jedem Push auf `main` führt ein GitHub-Actions-Workflow die Pipeline samt Prüfungen mit den eingecheckten Rohdaten aus und veröffentlicht die Karte nur, wenn alle Prüfungen bestehen.
+Bei jedem Push auf `main` startet ein GitHub-Actions-Workflow eine temporäre PostgreSQL-Datenbank, lädt die eingecheckten Rohdaten hinein, führt die Pipeline samt Prüfungen aus und veröffentlicht die Karte nur, wenn alle Prüfungen bestehen. Die Datenbank existiert nur während des Laufs.
 
 ## Datenbank
 
-`load_db.py` schreibt die geprüften Werte zusätzlich in eine PostgreSQL-Datenbank (Schema in `db/schema.sql`):
+`load_db.py` schreibt die geprüften Werte in eine PostgreSQL-Datenbank (Schema in `db/schema.sql`), aus der `pipeline.py` die Karte erzeugt:
 
 - `regions`: eine gemeinsame Tabelle für Bund, Länder und Kreise, hierarchisch über `parent_id` verknüpft
 - `observations`: eine lange Tabelle mit Wert, Status und Quelle je Gebiet, Indikator und Jahr; weitere Indikatoren oder Jahre kommen als neue Zeilen hinzu, nicht als neue Spalten oder Tabellen
 - `indicators` und `sources`: Beschreibung, Einheit, Herkunft und Lizenz
 
-Der Ladevorgang läuft in einer einzigen Transaktion und ersetzt die Werte der jeweiligen Quelle vollständig; er lässt sich also beliebig oft wiederholen. Karte und GitHub-Workflow brauchen die Datenbank nicht.
+Der Ladevorgang läuft in einer einzigen Transaktion und ersetzt die Werte der jeweiligen Quelle vollständig; er lässt sich also beliebig oft wiederholen. Die Rohdaten unter `data/raw/` bleiben dabei unverändert; aus ihnen lässt sich die Datenbank jederzeit neu aufbauen.
 
 ## Datenschutz
 
@@ -54,8 +54,8 @@ Die Karte lädt keine Inhalte von Drittanbietern: Schriftart (Fira Sans, SIL Ope
 pip install -r requirements.txt
 python fetch_zensus.py              # optional: Zensus-Tabelle neu abrufen (siehe unten)
 python fetch_vg250.py               # optional: Kreisgrenzen neu abrufen
+python load_db.py                   # Rohdaten in PostgreSQL laden (siehe unten)
 python pipeline.py
-python load_db.py                   # optional: Daten in PostgreSQL laden (siehe unten)
 cd docs && python -m http.server   # dann http://localhost:8000
 ```
 
@@ -66,11 +66,10 @@ export ZENSUS_API_TOKEN=...
 python fetch_zensus.py
 ```
 
-Für `load_db.py` braucht es eine laufende PostgreSQL-Datenbank (getestet mit Version 16). Die Verbindung kommt aus der Umgebungsvariable `DATABASE_URL`; ohne sie wird `postgresql:///mietatlas` verwendet:
+Für `load_db.py` und `pipeline.py` braucht es eine laufende PostgreSQL-Datenbank (getestet mit Version 16). Die Verbindung kommt aus der Umgebungsvariable `DATABASE_URL`; ohne sie wird `postgresql:///mietatlas` verwendet. Einmalig anlegen:
 
 ```bash
 createdb mietatlas
-python load_db.py
 ```
 
 ## Entstehung

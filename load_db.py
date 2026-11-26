@@ -7,16 +7,14 @@ Reads data/raw/ with the same parser and checks as pipeline.py, creates the sche
 if needed, and replaces this source's rows in one transaction: either everything is
 loaded, or nothing changes. Safe to run repeatedly.
 """
-import os
 from pathlib import Path
 
 import psycopg
 
-from pipeline import DEUTSCHLAND, RENT_CSV, STICHTAG, load_rents, validate_rents
+from pipeline import (DATABASE_URL, DEUTSCHLAND, INDICATOR_ID, RENT_CSV, YEAR, load_rents,
+                      validate_rents)
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql:///mietatlas")
 SCHEMA_SQL = Path(__file__).parent / "db" / "schema.sql"
-YEAR = int(STICHTAG[-4:])  # 15.05.2022 -> 2022
 
 SOURCE = {
     "source_id": "zensus2022_4000W-0004",
@@ -26,7 +24,7 @@ SOURCE = {
     "licence": "dl-de/by-2-0",
 }
 INDICATOR = {
-    "indicator_id": "nettokaltmiete",
+    "indicator_id": INDICATOR_ID,
     "name": "Durchschnittliche Nettokaltmiete",
     "unit": "EUR/m²",
     "description": "Bestandsmieten aller vermieteten Wohnungen zum Zensusstichtag 15.05.2022",
