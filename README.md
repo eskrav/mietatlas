@@ -66,9 +66,36 @@ python load_db.py
 psql -d mietatlas -f db/model_schema.sql
 ```
 
+### Beispiel: Kappungsgrenze
+
+`db/model_kappung.sql` füllt diese Tabellen mit einem einfachen Modell zur [Kappungsgrenze](https://www.gesetze-im-internet.de/bgb/__558.html) für Mieterhöhungen in bestehenden Mietverhältnissen (§ 558 Abs. 3 BGB): Nach geltendem Recht darf die Miete in drei Jahren um höchstens 20 % steigen, in Gebieten mit angespanntem Wohnungsmarkt um höchstens 15 %. Das Modell rechnet für jeden Kreis:
+
+> Miete nach drei Jahren = Miete heute × min((1 + Marktwachstum)³, 1 + Kappungsgrenze)
+
+Eingang sind die echten Kreiswerte aus `observations`; berechnet wird in der Datenbank, je Modelllauf aus den dort gespeicherten Parameterwerten. Neben dem geltenden Recht gibt es zwei frei gewählte Beispielszenarien, die zeigen, dass dieselbe Änderung je nach Ausgestaltung ganz andere Kreise trifft:
+
+| Szenario | angespannte Märkte | übrige Kreise | betroffene Kreise |
+|---|---|---|---|
+| Geltendes Recht | 15 % | 20 % | – |
+| Kappungsgrenze 10 % in angespannten Märkten | 10 % | 20 % | 103 |
+| Kappungsgrenze 15 % überall | 15 % | 15 % | 297 |
+
+Annahmen, als Parameter mit Art `assumption` gespeichert und damit änderbar und nachvollziehbar:
+
+- **Marktwachstum** 6 % pro Jahr: wie stark die ortsübliche Vergleichsmiete steigt, bis zu der erhöht werden darf
+- **Angespannter Markt**: ein Kreis gilt als angespannt, wenn seine Miete mindestens dem Bundeswert entspricht (103 von 400 Kreisen). Das ist eine Näherung; tatsächlich bestimmen die Länder die Gebiete per Rechtsverordnung, häufig für einzelne Gemeinden
+- **Musterwohnung** 70 m²: für die Umrechnung in Euro pro Monat. Das Schema unterstützt Haushaltstypen, weil Wirkungsmodelle sie oft brauchen (etwa Energiekosten nach Haushaltstyp); hier hängt die Wirkung je m² aber nicht vom Haushalt ab, deshalb gibt es nur einen Musterhaushalt
+
+Das Ergebnis ist eine **Obergrenze, keine Prognose**: Das Modell nimmt an, dass jede Miete so weit steigt, wie Marktentwicklung und Kappungsgrenze es zulassen. Ein früherer Lauf mit 5 % Marktwachstum zeigt, wie geänderte Annahmen nachvollziehbar bleiben; ein unveröffentlichter Entwurf mit engerer Abgrenzung angespannter Märkte zeigt, dass nur freigegebene Szenarien in `published_results` erscheinen.
+
+```bash
+psql -d mietatlas -f db/model_kappung.sql
+psql -d mietatlas -f db/model_queries.sql
+```
+
 ## Tests
 
-`tests/` enthält Tests für den Parser (an kleinen Beispieltabellen im Format der Zensus-API), für die Prüfungen, die Farbklassen, die Datenbank, die Modelltabellen und die Abfragen in `db/queries.sql`: Wiederholtes Laden ergibt denselben Stand, ein fehlgeschlagener Ladevorgang ändert nichts, und die Datenbank liefert genau die Werte der Rohdatei. Die Datenbanktests laufen gegen eine eigene Testdatenbank und werden übersprungen, wenn keine erreichbar ist. Im GitHub-Workflow laufen alle Tests vor jedem Build.
+`tests/` enthält Tests für den Parser (an kleinen Beispieltabellen im Format der Zensus-API), für die Prüfungen, die Farbklassen, die Datenbank, die Modelltabellen und die Abfragen in `db/queries.sql` und `db/model_queries.sql`: Wiederholtes Laden ergibt denselben Stand, ein fehlgeschlagener Ladevorgang ändert nichts, und die Datenbank liefert genau die Werte der Rohdatei. Die Datenbanktests laufen gegen eine eigene Testdatenbank und werden übersprungen, wenn keine erreichbar ist. Im GitHub-Workflow laufen alle Tests vor jedem Build.
 
 ```bash
 createdb mietatlas_test   # einmalig, für die Datenbanktests

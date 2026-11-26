@@ -109,7 +109,7 @@ WITH latest_runs AS (
     FROM atlas.model_runs r
     JOIN atlas.scenarios s USING (scenario_id)
     WHERE s.is_published
-    ORDER BY r.scenario_id, r.run_at DESC
+    ORDER BY r.scenario_id, r.run_at DESC, r.run_id DESC  -- run_id breaks ties
 )
 SELECT lr.scenario_id,
        res.region_id,
