@@ -50,9 +50,25 @@ Der Ladevorgang läuft in einer einzigen Transaktion und ersetzt die Werte der j
 psql -d mietatlas -f db/queries.sql
 ```
 
+### Wirkungsmodell (Struktur)
+
+`db/model_schema.sql` legt fest, wie sich ein Wirkungsmodell („Maßnahme X → Effekt Y“) in derselben Datenbank ablegen lässt:
+
+- `parameters`: jede Modellannahme mit Basiswert, Einheit, Art (politischer Hebel, Definition, empirischer Zusammenhang oder Annahme), Quelle und dem Wertebereich, für den das Modell geprüft ist
+- `scenarios` und `scenario_overrides`: Szenarien speichern nur die Parameterwerte, die sie gegenüber der Basis ändern
+- `model_runs` und `run_parameters`: jeder Modelllauf mit Modellversion, Datenstand und einer Kopie der verwendeten Parameterwerte
+- `results`: die Ergebnisse je Lauf, Gebiet und Haushaltstyp; die Sicht `published_results` liefert nur den jeweils neuesten Lauf veröffentlichter Szenarien
+
+So lässt sich jede veröffentlichte Zahl auf Lauf, Modellversion und Parameterwerte zurückführen, auch wenn sich Annahmen später ändern. Das Schema baut auf den Tabellen aus `db/schema.sql` auf:
+
+```bash
+python load_db.py
+psql -d mietatlas -f db/model_schema.sql
+```
+
 ## Tests
 
-`tests/` enthält Tests für den Parser (an kleinen Beispieltabellen im Format der Zensus-API), für die Prüfungen, die Farbklassen, die Datenbank und die Abfragen in `db/queries.sql`: Wiederholtes Laden ergibt denselben Stand, ein fehlgeschlagener Ladevorgang ändert nichts, und die Datenbank liefert genau die Werte der Rohdatei. Die Datenbanktests laufen gegen eine eigene Testdatenbank und werden übersprungen, wenn keine erreichbar ist. Im GitHub-Workflow laufen alle Tests vor jedem Build.
+`tests/` enthält Tests für den Parser (an kleinen Beispieltabellen im Format der Zensus-API), für die Prüfungen, die Farbklassen, die Datenbank, die Modelltabellen und die Abfragen in `db/queries.sql`: Wiederholtes Laden ergibt denselben Stand, ein fehlgeschlagener Ladevorgang ändert nichts, und die Datenbank liefert genau die Werte der Rohdatei. Die Datenbanktests laufen gegen eine eigene Testdatenbank und werden übersprungen, wenn keine erreichbar ist. Im GitHub-Workflow laufen alle Tests vor jedem Build.
 
 ```bash
 createdb mietatlas_test   # einmalig, für die Datenbanktests
