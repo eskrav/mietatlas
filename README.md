@@ -34,6 +34,16 @@ Die Grenzen werden mit Coverage-Simplification vereinfacht, damit benachbarte Kr
 
 Bei jedem Push auf `main` führt ein GitHub-Actions-Workflow die Pipeline samt Prüfungen mit den eingecheckten Rohdaten aus und veröffentlicht die Karte nur, wenn alle Prüfungen bestehen.
 
+## Datenbank
+
+`load_db.py` schreibt die geprüften Werte zusätzlich in eine PostgreSQL-Datenbank (Schema in `db/schema.sql`):
+
+- `regions`: eine gemeinsame Tabelle für Bund, Länder und Kreise, hierarchisch über `parent_id` verknüpft
+- `observations`: eine lange Tabelle mit Wert, Status und Quelle je Gebiet, Indikator und Jahr; weitere Indikatoren oder Jahre kommen als neue Zeilen hinzu, nicht als neue Spalten oder Tabellen
+- `indicators` und `sources`: Beschreibung, Einheit, Herkunft und Lizenz
+
+Der Ladevorgang läuft in einer einzigen Transaktion und ersetzt die Werte der jeweiligen Quelle vollständig; er lässt sich also beliebig oft wiederholen. Karte und GitHub-Workflow brauchen die Datenbank nicht.
+
 ## Datenschutz
 
 Die Karte lädt keine Inhalte von Drittanbietern: Schriftart (Fira Sans, SIL Open Font License) und Kartenbibliothek (MapLibre GL JS, BSD-3-Clause) liegen unter `docs/vendor/`, Lizenztexte jeweils dabei. Es gibt keine Cookies und kein Tracking; Impressum und Datenschutzhinweis unter `docs/impressum.html`. Die Seiten sind mit `noindex` für Suchmaschinen gekennzeichnet.
@@ -45,6 +55,7 @@ pip install -r requirements.txt
 python fetch_zensus.py              # optional: Zensus-Tabelle neu abrufen (siehe unten)
 python fetch_vg250.py               # optional: Kreisgrenzen neu abrufen
 python pipeline.py
+python load_db.py                   # optional: Daten in PostgreSQL laden (siehe unten)
 cd docs && python -m http.server   # dann http://localhost:8000
 ```
 
@@ -53,6 +64,13 @@ Für `fetch_zensus.py` braucht es ein kostenloses Konto bei der [Zensusdatenbank
 ```bash
 export ZENSUS_API_TOKEN=...
 python fetch_zensus.py
+```
+
+Für `load_db.py` braucht es eine laufende PostgreSQL-Datenbank (getestet mit Version 16). Die Verbindung kommt aus der Umgebungsvariable `DATABASE_URL`; ohne sie wird `postgresql:///mietatlas` verwendet:
+
+```bash
+createdb mietatlas
+python load_db.py
 ```
 
 ## Entstehung
