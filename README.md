@@ -111,6 +111,8 @@ createdb mietatlas_test   # einmalig, für die Datenbanktests
 pytest
 ```
 
+Die Paketversionen sind in `requirements.txt` fest vorgegeben, damit derselbe Code-Stand immer dieselbe Umgebung und dasselbe Ergebnis ergibt; `requirements-dev.txt` ergänzt das Testwerkzeug.
+
 ## Datenschutz
 
 Die Karte lädt keine Inhalte von Drittanbietern: Schriftart (Fira Sans, SIL Open Font License) und Kartenbibliothek (MapLibre GL JS, BSD-3-Clause) liegen unter `docs/vendor/`, Lizenztexte jeweils dabei. Es gibt keine Cookies und kein Tracking; Impressum und Datenschutzhinweis unter `docs/impressum.html`. Die Seiten sind mit `noindex` für Suchmaschinen gekennzeichnet.
@@ -118,7 +120,7 @@ Die Karte lädt keine Inhalte von Drittanbietern: Schriftart (Fira Sans, SIL Ope
 ## Lokal ausführen
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt   # Laufzeitpakete und pytest; nur requirements.txt genügt ohne Tests
 python fetch_zensus.py              # optional: Zensus-Tabelle neu abrufen (siehe unten)
 python fetch_vg250.py               # optional: Kreisgrenzen neu abrufen
 python load_db.py                   # Rohdaten in PostgreSQL laden (siehe unten)
