@@ -24,18 +24,21 @@
     --kreis-line: #ffffff;
     --land-line: #1d2733;
     --focus: #1f5fbf;
+    --neutral: #d5dbe0;      /* scenario view: Kreise without change */
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #151b22; --panel: #1c242d; --ink: #e8edf2; --muted: #9aa6b2;
       --rule: #2e3944; --kreis-line: #151b22; --land-line: #e8edf2; --focus: #7fb0ff;
+      --neutral: #3a4552;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #151b22; --panel: #1c242d; --ink: #e8edf2; --muted: #9aa6b2;
     --rule: #2e3944; --kreis-line: #151b22; --land-line: #e8edf2; --focus: #7fb0ff;
+    --neutral: #3a4552;
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
@@ -71,6 +74,17 @@
   .legend-labels { position: relative; height: 1.2em; font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
   .legend-labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
   .legend-unit { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+  /* view switch: rents (Zensus) or a scenario of the example model */
+  #view {
+    width: 100%; font: inherit; padding: 8px 10px; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--rule); border-radius: 6px;
+  }
+  #view:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  .legend-diff { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }
+  .legend-diff span { display: inline-block; width: 22px; height: 12px; margin-right: 8px; vertical-align: -1px; }
+  .model-note { font-size: 0.8rem; color: var(--muted); margin-top: 8px; padding: 8px 10px;
+    border-left: 3px solid var(--focus); background: var(--bg); }
 
   label { font-weight: 500; display: block; margin-bottom: 6px; }
   #search {
@@ -110,6 +124,7 @@
   .scenarios td { text-align: right; white-space: nowrap; padding: 3px 0 3px 8px; }
   .scenarios td.diff { color: var(--muted); }
   .scenarios tr.base th, .scenarios tr.base td:not(.diff) { font-weight: 500; }
+  .scenarios tr.selected { background: var(--bg); }
 
   footer { font-size: 0.78rem; color: var(--muted); }
   footer p:first-child { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 18px; }
@@ -136,10 +151,19 @@
   <header class="panel intro">
     <h1>Was kostet Wohnen zur Miete in Ihrem Kreis?</h1>
     <p class="lede">Durchschnittliche <strong>Nettokaltmiete je Quadratmeter</strong> aller vermieteten Wohnungen am 15. Mai 2022, für alle 400 Kreise und kreisfreien Städte. Es handelt sich um Bestandsmieten aus dem Zensus 2022, nicht um aktuelle Angebotsmieten.</p>
-    <div>
+    <div id="view-switch" hidden>
+      <label for="view">Ansicht</label>
+      <select id="view"></select>
+    </div>
+    <div id="legend-rent">
       <div class="legend" id="legend" aria-hidden="true"></div>
       <div class="legend-labels" id="legend-labels"></div>
       <p class="legend-unit">Nettokaltmiete in €/m²</p>
+    </div>
+    <div id="legend-scenario" hidden>
+      <div class="legend-diff" id="legend-diff"></div>
+      <p class="legend-unit" id="legend-diff-unit"></p>
+      <p class="model-note">Modellrechnung mit vereinfachten Annahmen, keine Prognose. Gezeigt wird die Änderung gegenüber dem geltenden Recht.</p>
     </div>
   </header>
 
@@ -184,15 +208,16 @@ async function getJSON(url) {
   return res.json();
 }
 
-// example model (optional): if this file can't be loaded, the map simply shows no scenarios
+// example model: optional; if szenarien.json can't be loaded, the map works as before
 let scenarios = null;
-getJSON("data/szenarien.json").then(s => { scenarios = s; }).catch(() => {});
+let view = "miete";   // "miete" (Zensus) or the id of a scenario
 
 Promise.all([
   getJSON("data/summary.json"),
   getJSON("data/kreise_mieten.geojson"),
   getJSON("data/laender.geojson"),
-]).then(([summary, kreise, laender]) => init(summary, kreise, laender))
+  getJSON("data/szenarien.json").catch(() => null),
+]).then(([summary, kreise, laender, sz]) => { scenarios = sz; init(summary, kreise, laender); })
   .catch(err => {
     document.getElementById("detail").innerHTML =
       `<p class="hint">Die Kartendaten konnten nicht geladen werden: ${err.message}. Bitte die Seite neu laden.</p>`;
@@ -204,6 +229,7 @@ function init(summary, kreise, laender) {
 
   // give every feature a numeric id so hover/selection can use feature-state
   kreise.features.forEach((f, i) => { f.id = i; });
+  const scenarioView = setupScenarioView(kreise);
 
   const map = new maplibregl.Map({
     container: "map",
@@ -253,6 +279,11 @@ function init(summary, kreise, laender) {
     breaks.forEach((b, i) => step.push(b, COLORS[i + 1]));
 
     map.addLayer({ id: "kreise-fill", type: "fill", source: "kreise", paint: { "fill-color": step } });
+    if (scenarioView) scenarioView.onChange(id => {
+      map.setPaintProperty("kreise-fill", "fill-color", id === "miete" ? step : scenarioView.colors(id));
+      const current = selected !== null ? selected : hovered;
+      if (current !== null) showDetail(kreise.features[current].properties, summary);
+    });
     map.addLayer({ id: "kreise-line", type: "line", source: "kreise",
       paint: { "line-color": css("--kreis-line"), "line-width": 0.4 } });
     map.addLayer({ id: "laender-line", type: "line", source: "laender",
@@ -346,6 +377,65 @@ function init(summary, kreise, laender) {
   });
 }
 
+// Scenario view: colours the change of the model rent against current law, with one scale
+// for all scenarios so they can be compared. Returns null if there are no scenarios.
+const DIFF_COLORS = ["#a9cbe6", "#5b9bd0", "#1f5f9f"];   // smaller to larger reduction
+const INCREASE_COLOR = "#e99a62";                        // only if a scenario raises rents
+
+function setupScenarioView(kreise) {
+  if (!scenarios) return null;
+  const base = scenarios.szenarien.find(s => s.basis);
+  const others = scenarios.szenarien.filter(s => !s.basis);
+  if (!base || !others.length) return null;
+
+  // change of the monthly model rent per Kreis and scenario, stored on the features
+  let maxCut = 0;
+  kreise.features.forEach(f => {
+    const row = scenarios.werte[f.properties.AGS];
+    others.forEach(s => {
+      const d = row ? row[s.id][1] - row[base.id][1] : 0;
+      f.properties[`diff_${s.id}`] = d;
+      maxCut = Math.max(maxCut, -d);
+    });
+  });
+  // three equal classes of reduction, in round 5-euro steps
+  const width = Math.max(5, Math.ceil(maxCut / 3 / 5) * 5);
+  const edges = [-2 * width, -width];   // e.g. -30, -15
+
+  const par = base.parameter;
+  const select = document.getElementById("view");
+  select.innerHTML = `<option value="miete">Nettokaltmiete 2022 (Zensus)</option>
+    <optgroup label="Modellrechnung: Änderung gegenüber geltendem Recht">` +
+    others.map(s => `<option value="${s.id}">${s.name}</option>`).join("") + `</optgroup>`;
+  document.getElementById("view-switch").hidden = false;
+  document.getElementById("legend-diff").innerHTML = [
+    [css("--neutral"), "unverändert"],
+    [DIFF_COLORS[0], `weniger als ${fmtEur.format(width)} € günstiger`],
+    [DIFF_COLORS[1], `${fmtEur.format(width)} bis ${fmtEur.format(2 * width)} € günstiger`],
+    [DIFF_COLORS[2], `mehr als ${fmtEur.format(2 * width)} € günstiger`],
+  ].map(([c, t]) => `<div><span style="background:${c}"></span>${t}</div>`).join("");
+  document.getElementById("legend-diff-unit").textContent =
+    `Monatsmiete einer ${fmtEur.format(par.wohnflaeche)}-m²-Wohnung nach ${fmtEur.format(par.horizont)} Jahren`;
+
+  let listener = () => {};
+  select.addEventListener("change", () => {
+    view = select.value;
+    document.getElementById("legend-rent").hidden = view !== "miete";
+    document.getElementById("legend-scenario").hidden = view === "miete";
+    listener(view);
+  });
+  return {
+    onChange: fn => { listener = fn; },
+    colors: id => {
+      const v = ["get", `diff_${id}`];
+      return ["case",
+        ["==", v, 0], css("--neutral"),
+        [">", v, 0], INCREASE_COLOR,
+        ["step", v, DIFF_COLORS[2], edges[0], DIFF_COLORS[1], edges[1], DIFF_COLORS[0]]];
+    },
+  };
+}
+
 function showDetail(p, summary) {
   const diff = p.miete - summary.deutschland;
   const rel = Math.abs(diff) < 0.005 ? "genau im Bundesdurchschnitt"
@@ -373,7 +463,8 @@ function scenarioBlock(p, summary) {
     const month = row[s.id][1];
     const d = month - baseMonth;
     const diff = s.basis ? "" : d === 0 ? "±0&nbsp;€" : `${d > 0 ? "+" : "−"}${fmtEur.format(Math.abs(d))}&nbsp;€`;
-    return `<tr class="${s.basis ? "base" : ""}"><th scope="row">${s.name}</th>
+    const cls = [s.basis ? "base" : "", s.id === view ? "selected" : ""].join(" ").trim();
+    return `<tr class="${cls}"><th scope="row">${s.name}</th>
       <td>${fmtEur.format(month)}&nbsp;€</td><td class="diff">${diff}</td></tr>`;
   }).join("");
   return `<div class="scenarios">
