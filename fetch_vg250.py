@@ -18,7 +18,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from pipeline import KREISE_SHP, load_kreise
+from pipeline import KREISE_SHP, DataCheckError, load_kreise
 
 URL = os.environ.get(
     "VG250_URL",
@@ -63,7 +63,7 @@ def main() -> None:
         extract_layer(archive, tmp)
         try:
             kreise = load_kreise(tmp / (LAYER + ".shp"))  # CRS, unique AGS, 400 Kreise
-        except AssertionError as e:
+        except DataCheckError as e:
             sys.exit(f"Downloaded Kreis layer failed the checks, {TARGET} left unchanged: {e}")
 
         changed = [

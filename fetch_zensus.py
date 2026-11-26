@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from pipeline import RENT_CSV, load_rents, validate_rents
+from pipeline import RENT_CSV, DataCheckError, load_rents, validate_rents
 
 API_BASE = os.environ.get("ZENSUS_API_BASE", "https://ergebnisse.zensus2022.de/api/rest/2020/")
 TABLE = "4000W-0004"
@@ -86,7 +86,7 @@ def main() -> None:
     try:
         new = load_rents(Path(tmp.name))
         validate_rents(new)  # same checks as the pipeline: 400 Kreise, AGS format, flags, range
-    except (AssertionError, ValueError) as e:
+    except DataCheckError as e:
         os.unlink(tmp.name)
         preview = "\n".join(body.splitlines()[:10])
         sys.exit(f"Downloaded table failed the checks, {RENT_CSV} left unchanged: {e}\n"
@@ -94,7 +94,7 @@ def main() -> None:
 
     try:
         old = load_rents(RENT_CSV)
-    except (AssertionError, ValueError, FileNotFoundError):
+    except (DataCheckError, FileNotFoundError):
         old = None  # no previous file, or one in another layout (e.g. the website export)
     Path(tmp.name).replace(RENT_CSV)
     if old is None:

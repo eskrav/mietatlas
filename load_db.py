@@ -11,8 +11,8 @@ from pathlib import Path
 
 import psycopg
 
-from pipeline import (DATABASE_URL, DEUTSCHLAND, INDICATOR_ID, RENT_CSV, YEAR, load_rents,
-                      validate_rents)
+from pipeline import (DATABASE_URL, DEUTSCHLAND, INDICATOR_ID, RENT_CSV, YEAR, check,
+                      load_rents, validate_rents)
 
 SCHEMA_SQL = Path(__file__).parent / "db" / "schema.sql"
 
@@ -41,7 +41,7 @@ LAENDER = {
 
 def region_rows(rents: dict) -> list[tuple]:
     unknown = {a[:2] for a in rents} - set(LAENDER)
-    assert not unknown, f"Kreise with unknown Land codes: {unknown}"
+    check(not unknown, f"Kreise with unknown Land codes: {unknown}")
     rows = [("DE", "Deutschland", "bund", None)]
     rows += [(code, name, "land", "DE") for code, name in LAENDER.items()]
     rows += [(ags, r["name"], "kreis", ags[:2]) for ags, r in sorted(rents.items())]
